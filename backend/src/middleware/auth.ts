@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../lib/config';
 
-// Extend Express Request to include admin flag
 declare global {
   namespace Express {
     interface Request {
@@ -28,10 +27,11 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
 }
 
 export function setAdminSession(res: Response): void {
+  // Configuration cookie pour cross-domain sur Render
   res.cookie(ADMIN_SESSION_COOKIE, SESSION_TOKEN, {
     httpOnly: true,
-    secure: config.cookie.secure,
-    sameSite: 'lax',
+    secure: true, // Toujours true sur Render (HTTPS)
+    sameSite: 'none', // Requis pour cross-domain
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     path: '/',
   });
@@ -40,8 +40,8 @@ export function setAdminSession(res: Response): void {
 export function clearAdminSession(res: Response): void {
   res.clearCookie(ADMIN_SESSION_COOKIE, {
     httpOnly: true,
-    secure: config.cookie.secure,
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
     path: '/',
   });
 }

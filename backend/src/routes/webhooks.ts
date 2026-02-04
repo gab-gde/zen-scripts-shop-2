@@ -7,7 +7,6 @@ import Stripe from 'stripe';
 
 const router = Router();
 
-// Generate order number: ZEN-YYYYMMDD-XXXX
 function generateOrderNumber(): string {
   const now = new Date();
   const year = now.getFullYear();
@@ -19,126 +18,79 @@ function generateOrderNumber(): string {
 }
 
 // POST /api/webhooks/stripe
-// IMPORTANT: This route receives raw body for signature verification
 router.post('/stripe', async (req: Request, res: Response) => {
   const sig = req.headers['stripe-signature'] as string;
 
   if (!sig) {
-    console.error('[WEBHOOK] No Stripe signature header');
-    return res.status(400).json({ error: 'No signature header' });
+    console.error('[WEBHOOK] No signature');
+    return res.status(400).json({ error: 'No signature' });
   }
 
   let event: Stripe.Event;
 
   try {
-    // Verify webhook signature using raw body
-    // req.body is a Buffer because of express.raw() middleware
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      config.stripe.webhookSecret
-    );
+    event = stripe.webhooks.constructEvent(req.body, sig, config.stripe.webhookSecret);
   } catch (err: any) {
     console.error('[WEBHOOK] Signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
-  console.log(`[WEBHOOK] Received event: ${event.type}`);
+  console.log(`[WEBHOOK] Event: ${event.type}`);
 
-  // Handle the event
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const session = event.data.object as Stripe.Checkout.Session;
-      
-      console.log(`[WEBHOOK] Processing checkout.session.completed: ${session.id}`);
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    
+    try {
+      const email = session.customer_details?.email;
+      const scriptId = session.metadata?.scriptId;
+      const scriptName = session.metadata?.scriptName || 'Script';
+      const amountTotal = session.amount_total || 0;
+      const currency = session.currency || 'eur';
 
-      try {
-        // Extract data from session
-        const email = session.customer_details?.email;
-        const scriptId = session.metadata?.scriptId;
-        const scriptName = session.metadata?.scriptName || 'Script';
-        const amountTotal = session.amount_total || 0;
-        const currency = session.currency || 'eur';
+      if (!email || !scriptId) {
+        console.error('[WEBHOOK] Missing email or scriptId');
+        return res.json({ received: true });
+      }
 
-        if (!email || !scriptId) {
-          console.error('[WEBHOOK] Missing email or scriptId in session metadata');
-          break;
-        }
+      // Check idempotency
+      const { data: existingOrder } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('stripe_session_id', session.id)
+        .single();
 
-        // Check if order already exists (idempotency)
-        const { data: existingOrder } = await supabase
-          .from('orders')
-          .select('id')
-          .eq('stripe_session_id', session.id)
-          .single();
+      if (existingOrder) {
+        console.log('[WEBHOOK] Order already exists');
+        return res.json({ received: true });
+      }
 
-        if (existingOrder) {
-          console.log(`[WEBHOOK] Order already exists for session: ${session.id}`);
-          break;
-        }
+      const orderNumber = generateOrderNumber();
 
-        // Generate unique order number
-        const orderNumber = generateOrderNumber();
+      const { error: insertError } = await supabase.from('orders').insert({
+        order_number: orderNumber,
+        email: email,
+        script_id: scriptId,
+        amount_cents: amountTotal,
+        currency: currency.toUpperCase(),
+        stripe_session_id: session.id,
+        payment_status: 'completed',
+      });
 
-        // Create order in database
-        const { error: insertError } = await supabase
-          .from('orders')
-          .insert({
-            order_number: orderNumber,
-            email: email,
-            script_id: scriptId,
-            amount_cents: amountTotal,
-            currency: currency.toUpperCase(),
-            stripe_session_id: session.id,
-            payment_status: 'completed',
-          });
-
-        if (insertError) {
-          console.error('[WEBHOOK] Failed to insert order:', insertError);
-          throw insertError;
-        }
-
+      if (insertError) {
+        console.error('[WEBHOOK] Insert error:', insertError);
+      } else {
         console.log(`[WEBHOOK] Order created: ${orderNumber}`);
 
-        // Format amount for email
         const formattedAmount = `${(amountTotal / 100).toFixed(2)} ${currency.toUpperCase()}`;
 
-        // Send confirmation email to customer
-        await sendOrderConfirmationEmail({
-          to: email,
-          orderNumber,
-          scriptName,
-          amount: formattedAmount,
-        });
-
-        // Send notification to admin
-        await sendAdminNotificationEmail({
-          to: email,
-          orderNumber,
-          scriptName,
-          amount: formattedAmount,
-        });
-
-        console.log(`[WEBHOOK] Emails sent for order: ${orderNumber}`);
-
-      } catch (error) {
-        console.error('[WEBHOOK] Error processing checkout.session.completed:', error);
-        // Don't return error to Stripe - we've received the webhook
+        await sendOrderConfirmationEmail({ to: email, orderNumber, scriptName, amount: formattedAmount });
+        await sendAdminNotificationEmail({ to: email, orderNumber, scriptName, amount: formattedAmount });
       }
-      break;
+    } catch (error) {
+      console.error('[WEBHOOK] Processing error:', error);
     }
-
-    case 'checkout.session.expired': {
-      const session = event.data.object as Stripe.Checkout.Session;
-      console.log(`[WEBHOOK] Checkout session expired: ${session.id}`);
-      break;
-    }
-
-    default:
-      console.log(`[WEBHOOK] Unhandled event type: ${event.type}`);
   }
 
-  // Return 200 to acknowledge receipt
   res.json({ received: true });
 });
 

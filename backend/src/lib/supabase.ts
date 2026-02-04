@@ -12,7 +12,6 @@ export const supabase = createClient(
   }
 );
 
-// Types for database tables
 export interface Script {
   id: string;
   name: string;

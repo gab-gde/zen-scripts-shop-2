@@ -14,7 +14,6 @@ router.get('/', async (req: Request, res: Response) => {
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 
-    // Add search filter if provided
     if (search && typeof search === 'string' && search.trim()) {
       query = query.or(`name.ilike.%${search}%,short_description.ilike.%${search}%`);
     }
@@ -23,26 +22,17 @@ router.get('/', async (req: Request, res: Response) => {
 
     if (error) {
       console.error('[SCRIPTS] Failed to fetch:', error);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to fetch scripts',
-      });
+      return res.status(500).json({ success: false, error: 'Failed to fetch scripts' });
     }
 
-    res.json({
-      success: true,
-      scripts: scripts || [],
-    });
+    res.json({ success: true, scripts: scripts || [] });
   } catch (error) {
     console.error('[SCRIPTS] Error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-    });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
-// GET /api/scripts/:slug - Get single script by slug
+// GET /api/scripts/:slug
 router.get('/:slug', async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
@@ -55,22 +45,13 @@ router.get('/:slug', async (req: Request, res: Response) => {
       .single();
 
     if (error || !script) {
-      return res.status(404).json({
-        success: false,
-        error: 'Script not found',
-      });
+      return res.status(404).json({ success: false, error: 'Script not found' });
     }
 
-    res.json({
-      success: true,
-      script,
-    });
+    res.json({ success: true, script });
   } catch (error) {
     console.error('[SCRIPTS] Fetch error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-    });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

@@ -6,7 +6,6 @@ import { config } from '../lib/config';
 
 const router = Router();
 
-// Validation schema
 const createSessionSchema = z.object({
   scriptId: z.string().uuid('Invalid script ID'),
   email: z.string().email('Invalid email').optional(),
@@ -15,19 +14,13 @@ const createSessionSchema = z.object({
 // POST /api/checkout/create-session
 router.post('/create-session', async (req: Request, res: Response) => {
   try {
-    // Validate request body
     const validation = createSessionSchema.safeParse(req.body);
     if (!validation.success) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation error',
-        details: validation.error.errors,
-      });
+      return res.status(400).json({ success: false, error: 'Validation error', details: validation.error.errors });
     }
 
     const { scriptId, email } = validation.data;
 
-    // Fetch script from database
     const { data: script, error: scriptError } = await supabase
       .from('scripts')
       .select('*')
@@ -36,15 +29,11 @@ router.post('/create-session', async (req: Request, res: Response) => {
       .single();
 
     if (scriptError || !script) {
-      return res.status(404).json({
-        success: false,
-        error: 'Script not found or not available',
-      });
+      return res.status(404).json({ success: false, error: 'Script not found or not available' });
     }
 
     const typedScript = script as Script;
 
-    // Create Stripe Checkout Session with inline price_data
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -71,41 +60,27 @@ router.post('/create-session', async (req: Request, res: Response) => {
       cancel_url: `${config.siteUrl}/cancel`,
     });
 
-    console.log(`[CHECKOUT] Session created: ${session.id} for script ${typedScript.name}`);
-
-    res.json({
-      success: true,
-      url: session.url,
-    });
+    console.log(`[CHECKOUT] Session created: ${session.id}`);
+    res.json({ success: true, url: session.url });
   } catch (error) {
-    console.error('[CHECKOUT] Session creation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create checkout session',
-    });
+    console.error('[CHECKOUT] Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create checkout session' });
   }
 });
 
-// GET /api/checkout/session/:sessionId - Get session details for success page
+// GET /api/checkout/session/:sessionId
 router.get('/session/:sessionId', async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
 
-    // Fetch order from database by stripe_session_id
     const { data: order, error } = await supabase
       .from('orders')
-      .select(`
-        *,
-        scripts (name)
-      `)
+      .select(`*, scripts (name)`)
       .eq('stripe_session_id', sessionId)
       .single();
 
     if (error || !order) {
-      return res.status(404).json({
-        success: false,
-        error: 'Order not found',
-      });
+      return res.status(404).json({ success: false, error: 'Order not found' });
     }
 
     res.json({
@@ -119,10 +94,7 @@ router.get('/session/:sessionId', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('[CHECKOUT] Get session error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get session details',
-    });
+    res.status(500).json({ success: false, error: 'Failed to get session details' });
   }
 });
 
