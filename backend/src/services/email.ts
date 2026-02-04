@@ -170,7 +170,6 @@ export async function sendAdminNotificationEmail(data: OrderEmailData): Promise<
     console.log(`[EMAIL] Admin notification sent`);
   } catch (error) {
     console.error('[EMAIL] Failed to send admin notification:', error);
-    // Don't throw - admin notification is not critical
   }
 }
 
@@ -206,7 +205,7 @@ export async function sendSupportNotificationEmail(data: {
     await resend.emails.send({
       from: 'Zen Scripts Support <noreply@zenscripts.shop>',
       to: [config.admin.email],
-      replyTo: data.email,
+      reply_to: data.email,
       subject: `[Support] ${data.subject}`,
       html: htmlContent,
     });
