@@ -1,12 +1,37 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const games = [
-  { name: 'Fortnite', emoji: '🎯' },
-  { name: 'EA FC / FIFA', emoji: '⚽' },
-  { name: 'Rainbow Six', emoji: '🔫' },
-  { name: 'Rocket League', emoji: '🚗' },
-  { name: 'Call of Duty', emoji: '💥' },
-  { name: 'Apex Legends', emoji: '🏆' },
+  { 
+    name: 'Fortnite', 
+    image: 'https://cdn2.unrealengine.com/fortnite-chapter-5-702x336-702x336-b0ae4528e699.jpg',
+    available: true
+  },
+  { 
+    name: 'EA FC 26', 
+    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2669320/header.jpg',
+    available: true
+  },
+  { 
+    name: 'Rainbow Six', 
+    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg',
+    available: true
+  },
+  { 
+    name: 'Rocket League', 
+    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/252950/header.jpg',
+    available: false
+  },
+  { 
+    name: 'Call of Duty', 
+    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1938090/header.jpg',
+    available: false
+  },
+  { 
+    name: 'Apex Legends', 
+    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1172470/header.jpg',
+    available: false
+  },
 ];
 
 export default function HomePage() {
@@ -70,13 +95,44 @@ export default function HomePage() {
             <p className="text-gray-400">Des scripts optimisés pour les jeux les plus populaires</p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {games.map((game) => (
-              <div key={game.name} className="bg-surface rounded-xl p-6 text-center border border-surface-border hover:border-yellow-500/30 transition-all card-hover">
-                <div className="text-3xl mb-3">{game.emoji}</div>
-                <div className="text-sm font-medium">{game.name}</div>
+              <div 
+                key={game.name} 
+                className={`relative rounded-xl overflow-hidden border transition-all card-hover ${
+                  game.available 
+                    ? 'border-surface-border hover:border-yellow-500/50' 
+                    : 'border-surface-border opacity-60'
+                }`}
+              >
+                <div className="aspect-[16/9] relative">
+                  <Image 
+                    src={game.image} 
+                    alt={game.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-lg">{game.name}</span>
+                    {game.available ? (
+                      <span className="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full">Disponible</span>
+                    ) : (
+                      <span className="bg-gray-500/20 text-gray-400 text-xs px-2 py-1 rounded-full">Bientôt</span>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
+          </div>
+          
+          <div className="text-center mt-10">
+            <Link href="/scripts" className="btn-zeus px-6 py-3 rounded-xl inline-block">
+              Voir tous les scripts disponibles
+            </Link>
           </div>
         </div>
       </section>
