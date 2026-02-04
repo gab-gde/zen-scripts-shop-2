@@ -163,6 +163,61 @@ router.get('/orders', requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/admin/messages
+router.get('/messages', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { data: messages, error } = await supabase
+      .from('support_messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return res.status(500).json({ success: false, error: 'Failed to fetch messages' });
+    }
+
+    res.json({ success: true, messages: messages || [] });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// PUT /api/admin/messages/:id/read
+router.put('/messages/:id/read', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('support_messages')
+      .update({ is_read: true })
+      .eq('id', id);
+
+    if (error) {
+      return res.status(500).json({ success: false, error: 'Failed to update message' });
+    }
+
+    res.json({ success: true, message: 'Message marked as read' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/admin/messages/:id
+router.delete('/messages/:id', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase.from('support_messages').delete().eq('id', id);
+
+    if (error) {
+      return res.status(500).json({ success: false, error: 'Failed to delete message' });
+    }
+
+    res.json({ success: true, message: 'Message deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 // GET /api/admin/stats
 router.get('/stats', requireAdmin, async (req: Request, res: Response) => {
   try {
