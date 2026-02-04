@@ -4,7 +4,7 @@ import Image from 'next/image';
 const games = [
   { 
     name: 'Fortnite', 
-    image: 'https://cdn2.unrealengine.com/fortnite-chapter-5-702x336-702x336-b0ae4528e699.jpg',
+    image: 'https://images.unsplash.com/photo-1589241062272-c0a000072dfa?w=800&h=450&fit=crop',
     available: true
   },
   { 
