@@ -1,36 +1,45 @@
 import Link from 'next/link';
-import Image from 'next/image';
 
 const games = [
   { 
-    name: 'Fortnite', 
-    image: 'https://images.unsplash.com/photo-1589241062272-c0a000072dfa?w=800&h=450&fit=crop',
+    name: 'Rainbow Six Siege', 
+    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=450&fit=crop',
     available: true
   },
   { 
     name: 'EA FC 26', 
-    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2669320/header.jpg',
+    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=450&fit=crop',
     available: true
   },
   { 
-    name: 'Rainbow Six', 
-    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg',
+    name: 'PUBG', 
+    image: 'https://images.unsplash.com/photo-1542751110-97427bbecf20?w=800&h=450&fit=crop',
+    available: true
+  },
+  { 
+    name: 'NBA 2K25', 
+    image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=450&fit=crop',
     available: true
   },
   { 
     name: 'Rocket League', 
-    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/252950/header.jpg',
-    available: false
+    image: 'https://images.unsplash.com/photo-1511882150382-421056c89033?w=800&h=450&fit=crop',
+    available: true
   },
   { 
-    name: 'Call of Duty', 
-    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1938090/header.jpg',
-    available: false
+    name: 'Call of Duty BO6', 
+    image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b2b0d?w=800&h=450&fit=crop',
+    available: true
   },
   { 
-    name: 'Apex Legends', 
-    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1172470/header.jpg',
-    available: false
+    name: 'DayZ', 
+    image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&h=450&fit=crop',
+    available: true
+  },
+  { 
+    name: 'Rust', 
+    image: 'https://images.unsplash.com/photo-1493711662062-fa541f7f3d24?w=800&h=450&fit=crop',
+    available: true
   },
 ];
 
@@ -76,8 +85,8 @@ export default function HomePage() {
               <div className="text-sm text-gray-500">Utilisateurs</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-yellow-400">10+</div>
-              <div className="text-sm text-gray-500">Jeux supportés</div>
+              <div className="text-3xl font-bold text-yellow-400">8</div>
+              <div className="text-sm text-gray-500">Jeux disponibles</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-yellow-400">24/7</div>
@@ -95,34 +104,24 @@ export default function HomePage() {
             <p className="text-gray-400">Des scripts optimisés pour les jeux les plus populaires</p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {games.map((game) => (
               <div 
                 key={game.name} 
-                className={`relative rounded-xl overflow-hidden border transition-all card-hover ${
-                  game.available 
-                    ? 'border-surface-border hover:border-yellow-500/50' 
-                    : 'border-surface-border opacity-60'
-                }`}
+                className="relative rounded-xl overflow-hidden border border-surface-border hover:border-yellow-500/50 transition-all card-hover"
               >
                 <div className="aspect-[16/9] relative">
-                  <Image 
+                  <img 
                     src={game.image} 
                     alt={game.name}
-                    fill
-                    className="object-cover"
-                    unoptimized
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent" />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-lg">{game.name}</span>
-                    {game.available ? (
-                      <span className="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full">Disponible</span>
-                    ) : (
-                      <span className="bg-gray-500/20 text-gray-400 text-xs px-2 py-1 rounded-full">Bientôt</span>
-                    )}
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-sm truncate">{game.name}</span>
+                    <span className="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">Dispo</span>
                   </div>
                 </div>
               </div>
