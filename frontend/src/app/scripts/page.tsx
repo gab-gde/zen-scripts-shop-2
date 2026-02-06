@@ -35,7 +35,7 @@ export default function ScriptsPage() {
       'pubg-battlegrounds-pro': '/images/pubg.jpg',
       'nba-2k25-shot-perfect': '/images/nba2k.jpg',
       'rocket-league-precision': '/images/rocket.jpg',
-      'black-ops-6-dominator': '/images/bo6.jpg',
+      'black-ops-7-dominator': '/images/bo7.jpg',
       'dayz-survivor-pro': '/images/dayz.jpg',
       'rust-recoil-master': '/images/rust.jpg',
     };
