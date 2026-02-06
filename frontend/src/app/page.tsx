@@ -1,46 +1,14 @@
 import Link from 'next/link';
 
 const games = [
-  { 
-    name: 'Rainbow Six Siege', 
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=450&fit=crop',
-    available: true
-  },
-  { 
-    name: 'EA FC 26', 
-    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=450&fit=crop',
-    available: true
-  },
-  { 
-    name: 'PUBG', 
-    image: 'https://images.unsplash.com/photo-1542751110-97427bbecf20?w=800&h=450&fit=crop',
-    available: true
-  },
-  { 
-    name: 'NBA 2K25', 
-    image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=450&fit=crop',
-    available: true
-  },
-  { 
-    name: 'Rocket League', 
-    image: 'https://images.unsplash.com/photo-1511882150382-421056c89033?w=800&h=450&fit=crop',
-    available: true
-  },
-  { 
-    name: 'Call of Duty BO6', 
-    image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b2b0d?w=800&h=450&fit=crop',
-    available: true
-  },
-  { 
-    name: 'DayZ', 
-    image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&h=450&fit=crop',
-    available: true
-  },
-  { 
-    name: 'Rust', 
-    image: 'https://images.unsplash.com/photo-1493711662062-fa541f7f3d24?w=800&h=450&fit=crop',
-    available: true
-  },
+  { name: 'Rainbow Six Siege', image: '/images/r6.jpg', available: true },
+  { name: 'EA FC 26', image: '/images/fc26.jpg', available: true },
+  { name: 'PUBG', image: '/images/pubg.jpg', available: true },
+  { name: 'NBA 2K25', image: '/images/nba2k.jpg', available: true },
+  { name: 'Rocket League', image: '/images/rocket.jpg', available: true },
+  { name: 'Call of Duty BO7', image: '/images/bo7.jpg', available: true },
+  { name: 'DayZ', image: '/images/dayz.jpg', available: true },
+  { name: 'Rust', image: '/images/rust.jpg', available: true },
 ];
 
 export default function HomePage() {
@@ -106,8 +74,9 @@ export default function HomePage() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {games.map((game) => (
-              <div 
+              <Link 
                 key={game.name} 
+                href="/scripts"
                 className="relative rounded-xl overflow-hidden border border-surface-border hover:border-yellow-500/50 transition-all card-hover"
               >
                 <div className="aspect-[16/9] relative">
@@ -124,7 +93,7 @@ export default function HomePage() {
                     <span className="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">Dispo</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           
