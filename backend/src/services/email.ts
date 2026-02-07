@@ -209,4 +209,6 @@ export async function sendSupportNotification(
 }
 
 // Alias pour compatibilité avec support.ts
-export const sendSupportNotificationEmail = sendSupportNotification;
+export const sendSupportNotificationEmail = (data: { email: string; subject: string; message: string }) => {
+  return sendSupportNotification(data.email, data.subject, data.message);
+};
