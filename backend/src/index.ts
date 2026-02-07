@@ -8,6 +8,7 @@ import webhooksRoutes from './routes/webhooks';
 import scriptsRoutes from './routes/scripts';
 import supportRoutes from './routes/support';
 import adminRoutes from './routes/admin';
+import adminBuildsRoutes from './routes/admin-builds';
 
 const app = express();
 
@@ -50,6 +51,12 @@ app.use('/api/webhooks', webhooksRoutes);
 app.use('/api/scripts', scriptsRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/builds', adminBuildsRoutes);
+```
+
+**Et n'oublie pas** d'ajouter la variable d'environnement dans Render (Backend → Environment) :
+```
+LICENSE_MASTER_SECRET=change_ceci_en_un_secret_long_et_aleatoire
 
 // 404
 app.use((req: Request, res: Response) => {
