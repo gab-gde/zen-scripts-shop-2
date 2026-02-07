@@ -1,14 +1,12 @@
 import { supabase } from '../lib/supabase';
 
-const BASE_SCRIPTS_BUCKET = 'base-scripts';   // Scripts .gpc de base (un par jeu)
-const BUILDS_BUCKET = 'builds';               // Builds générés pour chaque client
+const BASE_SCRIPTS_BUCKET = 'base-scripts';
+const BUILDS_BUCKET = 'builds';
 
 // ══════════════════════════════════════════════════════════════════════
 // RÉCUPÉRER LE SCRIPT DE BASE D'UN JEU
 // ══════════════════════════════════════════════════════════════════════
 export async function getBaseScript(scriptSlug: string): Promise<string | null> {
-  // Le fichier de base est stocké dans le bucket "base-scripts" 
-  // avec le nom: {slug}.gpc (ex: "ea-fc-26-pro.gpc")
   const { data, error } = await supabase.storage
     .from(BASE_SCRIPTS_BUCKET)
     .download(`${scriptSlug}.gpc`);
@@ -18,8 +16,10 @@ export async function getBaseScript(scriptSlug: string): Promise<string | null> 
     return null;
   }
 
-  const text = await data.text();
-  return text;
+  // Lire en ArrayBuffer puis décoder en Latin-1 pour préserver les caractères spéciaux
+  const arrayBuffer = await data.arrayBuffer();
+  const decoder = new TextDecoder('latin1');
+  return decoder.decode(arrayBuffer);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -30,13 +30,19 @@ export async function storeBuild(
   content: string,
   orderId: string
 ): Promise<string | null> {
-  // Stocke dans builds/{orderId}/{filename}
   const path = `${orderId}/${filename}`;
+
+  // Encoder en Latin-1 pour préserver les caractères spéciaux des .gpc
+  const encoder = new TextEncoder();
+  const bytes = new Uint8Array(content.length);
+  for (let i = 0; i < content.length; i++) {
+    bytes[i] = content.charCodeAt(i) & 0xFF;
+  }
 
   const { error } = await supabase.storage
     .from(BUILDS_BUCKET)
-    .upload(path, Buffer.from(content, 'utf-8'), {
-      contentType: 'text/plain',
+    .upload(path, bytes, {
+      contentType: 'application/octet-stream', // ← Force téléchargement, pas affichage
       upsert: true,
     });
 
@@ -52,9 +58,14 @@ export async function storeBuild(
 // GÉNÉRER UN LIEN DE TÉLÉCHARGEMENT TEMPORAIRE (1h)
 // ══════════════════════════════════════════════════════════════════════
 export async function getDownloadUrl(storagePath: string): Promise<string | null> {
+  // Extraire le nom du fichier pour le Content-Disposition
+  const filename = storagePath.split('/').pop() || 'script.gpc';
+
   const { data, error } = await supabase.storage
     .from(BUILDS_BUCKET)
-    .createSignedUrl(storagePath, 3600); // 1 heure
+    .createSignedUrl(storagePath, 3600, {
+      download: filename, // ← Force le téléchargement avec le bon nom de fichier
+    });
 
   if (error || !data) {
     console.error(`[Storage] Erreur création signed URL:`, error);
@@ -68,9 +79,13 @@ export async function getDownloadUrl(storagePath: string): Promise<string | null
 // REGÉNÉRER UN LIEN (pour l'admin ou le renvoi)
 // ══════════════════════════════════════════════════════════════════════
 export async function regenerateDownloadUrl(storagePath: string, expiresIn = 86400): Promise<string | null> {
+  const filename = storagePath.split('/').pop() || 'script.gpc';
+
   const { data, error } = await supabase.storage
     .from(BUILDS_BUCKET)
-    .createSignedUrl(storagePath, expiresIn); // 24h par défaut
+    .createSignedUrl(storagePath, expiresIn, {
+      download: filename, // ← Force le téléchargement
+    });
 
   if (error || !data) {
     console.error(`[Storage] Erreur regénération URL:`, error);
