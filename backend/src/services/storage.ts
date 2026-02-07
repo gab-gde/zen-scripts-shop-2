@@ -16,10 +16,37 @@ export async function getBaseScript(scriptSlug: string): Promise<string | null> 
     return null;
   }
 
-  // Lire le contenu complet comme texte UTF-8 (préserve les caractères box-drawing)
   const text = await data.text();
   console.log(`[Storage] Script de base "${scriptSlug}" chargé: ${text.length} caractères, ${text.split('\n').length} lignes`);
   return text;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// RÉCUPÉRER LE PDF DE SÉCURITÉ (en base64 pour pièce jointe email)
+// ══════════════════════════════════════════════════════════════════════
+let securityPdfCache: string | null = null;
+
+export async function getSecurityPdfBase64(): Promise<string | null> {
+  // Cache en mémoire pour ne pas re-télécharger à chaque vente
+  if (securityPdfCache) {
+    console.log('[Storage] PDF sécurité (cache mémoire)');
+    return securityPdfCache;
+  }
+
+  const { data, error } = await supabase.storage
+    .from(BASE_SCRIPTS_BUCKET)
+    .download('Zeus_Prenium_Security_Document.pdf');
+
+  if (error || !data) {
+    console.error('[Storage] PDF sécurité non trouvé dans base-scripts:', error);
+    return null;
+  }
+
+  const arrayBuffer = await data.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+  securityPdfCache = base64;
+  console.log(`[Storage] PDF sécurité chargé: ${Math.round(base64.length / 1024)} Ko (base64)`);
+  return base64;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -32,15 +59,13 @@ export async function storeBuild(
 ): Promise<string | null> {
   const path = `${orderId}/${filename}`;
 
-  // Convertir en Buffer UTF-8 pour préserver tous les caractères
   const buffer = Buffer.from(content, 'utf-8');
-
   console.log(`[Storage] Upload build: ${filename} (${buffer.length} bytes)`);
 
   const { error } = await supabase.storage
     .from(BUILDS_BUCKET)
     .upload(path, buffer, {
-      contentType: 'application/octet-stream', // Force téléchargement
+      contentType: 'application/octet-stream',
       upsert: true,
     });
 
