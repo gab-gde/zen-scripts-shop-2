@@ -36,7 +36,7 @@ function SuccessContent() {
             </div>
           )}
 
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6 text-left mb-8">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6 text-left mb-6">
             <h2 className="text-lg font-bold mb-4 text-green-400">🎮 Votre script arrive par email !</h2>
             <p className="text-gray-300 mb-4">
               Votre build chiffré unique est en cours de génération. Vous allez recevoir un email contenant :
@@ -54,7 +54,44 @@ function SuccessContent() {
                 <span className="bg-green-500 text-black w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold shrink-0">3</span>
                 <span>Les <strong className="text-white">instructions d&apos;installation</strong> (Zen Studio → Compiler → Flasher)</span>
               </li>
+              <li className="flex gap-3">
+                <span className="bg-green-500 text-black w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold shrink-0">4</span>
+                <span>Le <strong className="text-white">document de sécurité</strong> (PDF) détaillant la protection de votre copie</span>
+              </li>
             </ol>
+          </div>
+
+          {/* Section sécurité / dissuasion */}
+          <div className="bg-red-500/5 border border-red-500/30 rounded-xl p-6 text-left mb-6">
+            <div className="flex items-start gap-3 mb-3">
+              <span className="text-2xl">🔐</span>
+              <div>
+                <h3 className="text-red-400 font-bold text-base">Votre copie est protégée et traçable</h3>
+                <p className="text-gray-400 text-sm mt-1">Zeus_Prenium Security Framework v3.0 — 7 couches de protection</p>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm text-gray-300">
+              <div className="flex items-center gap-2">
+                <span className="text-red-400">▸</span>
+                <span><strong className="text-white">SHA-256 Hashing</strong> — Empreinte cryptographique unique</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-red-400">▸</span>
+                <span><strong className="text-white">Forensic Watermarking</strong> — Marqueurs invisibles dans le code</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-red-400">▸</span>
+                <span><strong className="text-white">Timing Fingerprint</strong> — Micro-variations uniques par copie</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-red-400">▸</span>
+                <span><strong className="text-white">Silent Kill Switch</strong> — Désactivation invisible si modifié</span>
+              </div>
+            </div>
+            <p className="text-red-400/80 text-xs mt-4 border-t border-red-500/20 pt-3">
+              ⚠️ Toute redistribution est détectée automatiquement et entraîne la révocation permanente de votre licence. 
+              Consultez le document de sécurité joint à votre email pour les détails complets.
+            </p>
           </div>
 
           <div className="bg-primary/30 rounded-xl p-4 mb-8">
