@@ -72,39 +72,80 @@ function licenseKeyToInts(licenseKey: string): number[] {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// SCRIPT INFO DETECTION
+// DETECT SCRIPT NAME FROM CODE
 // ══════════════════════════════════════════════════════════════════════
-function detectScriptInfo(code: string): { name: string; version: string; authors: string[] } {
+function detectScriptInfo(code: string): { name: string; version: string } {
   let name = 'Unknown_Script';
   let version = 'V1';
-  const authors: string[] = [];
 
-  // Detect name from header comments
-  const namePatterns = [
-    /\/\/\s*(?:Script|Name|Title)\s*[:=]\s*(.+)/i,
-    /^\s*\/\/\s*={3,}\s*\n\s*\/\/\s*(.+?)\s*\n/m,
-    /^\s*\/\/.*?([A-Z][A-Za-z0-9_ ]{3,}(?:PRO|PREMIUM|ULTRA|V\d))/m,
-  ];
-  for (const p of namePatterns) {
-    const m = code.match(p);
-    if (m) { name = m[1].trim().replace(/\s+/g, '_'); break; }
+  // Chercher le nom dans les commentaires (premières 100 lignes)
+  const lines = code.split('\n').slice(0, 100);
+  for (const line of lines) {
+    // Pattern: "MINGO ATTACKERS" ou "Script Name: ..." ou nom en majuscules
+    const nameMatch = line.match(/(?:MINGO\s+\w+|Script\s*[:=]\s*(.+)|^\s*\*?\s*([A-Z][A-Z0-9_ ]{5,}(?:PRO|PREMIUM|ULTRA|DOMINATOR|PRECISION|MASTER|SURVIVOR)))/i);
+    if (nameMatch) {
+      name = (nameMatch[1] || nameMatch[2] || nameMatch[0]).trim().replace(/[^a-zA-Z0-9_ -]/g, '').replace(/\s+/g, '_');
+      if (name.length > 3) break;
+    }
   }
 
-  // Detect version
+  // Chercher la version
   const verMatch = code.match(/(?:Version|Ver|V)\s*[:=]?\s*([\d.]+)/i);
   if (verMatch) version = `V${verMatch[1]}`;
 
-  // Detect old authors
-  const oldNames = ['Gb_dev', 'ABUSHADAD', 'CoreX', 'Empathy', 'Brodies', 'Optic', 'ZURN'];
-  for (const old of oldNames) {
-    if (code.toLowerCase().includes(old.toLowerCase())) authors.push(old);
-  }
-
-  return { name, version, authors };
+  return { name: name || 'Script', version };
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// SECURITY BLOCK GENERATION
+// FIND SAFE INJECTION POINT (outside of comments)
+// ══════════════════════════════════════════════════════════════════════
+function findInjectionPoint(code: string): number {
+  // Stratégie: trouver la position APRÈS le dernier */ du header,
+  // puis avant la première ligne de code réelle
+
+  let pos = 0;
+  let inBlockComment = false;
+  let lastBlockCommentEnd = -1;
+
+  // Scanner le fichier pour trouver les blocs /* */
+  for (let i = 0; i < code.length - 1; i++) {
+    if (!inBlockComment && code[i] === '/' && code[i + 1] === '*') {
+      inBlockComment = true;
+      i++;
+    } else if (inBlockComment && code[i] === '*' && code[i + 1] === '/') {
+      inBlockComment = false;
+      lastBlockCommentEnd = i + 2;
+      i++;
+    }
+  }
+
+  // Si on a trouvé la fin d'un bloc commentaire dans les 5000 premiers caractères, injecter après
+  if (lastBlockCommentEnd > 0 && lastBlockCommentEnd < 5000) {
+    // Avancer jusqu'à la prochaine ligne
+    pos = lastBlockCommentEnd;
+    while (pos < code.length && code[pos] !== '\n') pos++;
+    if (pos < code.length) pos++; // passer le \n
+    return pos;
+  }
+
+  // Sinon, chercher la fin des commentaires // en début de fichier
+  const lines = code.split('\n');
+  let linePos = 0;
+  for (let i = 0; i < lines.length && i < 50; i++) {
+    const trimmed = lines[i].trim();
+    if (trimmed === '' || trimmed.startsWith('//')) {
+      linePos += lines[i].length + 1;
+      continue;
+    }
+    // Première ligne qui n'est pas un commentaire //
+    return linePos;
+  }
+
+  return 0;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// GENERATE SECURITY BLOCK (pure ASCII, safe to inject anywhere)
 // ══════════════════════════════════════════════════════════════════════
 function generateSecurityBlock(
   buyerName: string,
@@ -113,25 +154,27 @@ function generateSecurityBlock(
   seeds: number[],
   watermark: number,
   hashChain: number[]
-): { block: string; vars: Record<string, string> } {
-  const vars: Record<string, string> = {
-    auth_state: `_zs${100 + Math.floor(Math.random() * 900)}`,
-    check_sum: `_vc${100 + Math.floor(Math.random() * 900)}`,
-    integrity: `_qi${100 + Math.floor(Math.random() * 900)}`,
-    gate: `_gk${100 + Math.floor(Math.random() * 900)}`,
-    watermark_var: `_wm${100 + Math.floor(Math.random() * 900)}`,
-    trap: `_tp${100 + Math.floor(Math.random() * 900)}`,
-    validate_counter: `_xc${100 + Math.floor(Math.random() * 900)}`,
-    heartbeat: `_hb${100 + Math.floor(Math.random() * 900)}`,
-  };
-
+): string {
   const displayName = buyerName.substring(0, 18).toUpperCase();
   const chainStr = hashChain.slice(0, 8).join(',');
 
-  const block = `
-// ╔════════════════════════════════════════════════════════╗
-// ║  LICENSE PROTECTION SYSTEM - ${SCRIPT_AUTHOR}         ║
-// ╚════════════════════════════════════════════════════════╝
+  // Noms de variables aléatoires
+  const v = {
+    a: `_zs${100 + Math.floor(Math.random() * 900)}`,
+    b: `_vc${100 + Math.floor(Math.random() * 900)}`,
+    c: `_qi${100 + Math.floor(Math.random() * 900)}`,
+    d: `_gk${100 + Math.floor(Math.random() * 900)}`,
+    e: `_wm${100 + Math.floor(Math.random() * 900)}`,
+    f: `_tp${100 + Math.floor(Math.random() * 900)}`,
+    g: `_xc${100 + Math.floor(Math.random() * 900)}`,
+    h: `_hb${100 + Math.floor(Math.random() * 900)}`,
+  };
+
+  return `
+// ================================================================
+// LICENSE PROTECTION SYSTEM - ${SCRIPT_AUTHOR}
+// Licensed to: ${displayName} | Key: ${licenseKey}
+// ================================================================
 #define _LIC_K1  ${keyInts[0] || 0}
 #define _LIC_K2  ${keyInts[1] || 0}
 #define _LIC_K3  ${keyInts[2] || 0}
@@ -146,91 +189,48 @@ function generateSecurityBlock(
 #define _LIC_S7  ${seeds[6]}
 #define _LIC_S8  ${seeds[7]}
 
-int ${vars.auth_state} = 0;
-int ${vars.check_sum} = 0;
-int ${vars.integrity} = _LIC_S1;
-int ${vars.gate} = 1;
-int ${vars.watermark_var} = _LIC_WM;
-int ${vars.trap} = 0;
-int ${vars.validate_counter} = 0;
-int ${vars.heartbeat} = 0;
+int ${v.a} = 0;
+int ${v.b} = 0;
+int ${v.c} = _LIC_S1;
+int ${v.d} = 1;
+int ${v.e} = _LIC_WM;
+int ${v.f} = 0;
+int ${v.g} = 0;
+int ${v.h} = 0;
 
 const int _HC[] = {${chainStr}};
 
-// License greeting
-const char GreetingText[] = "Licensed to: ${displayName}";
 `;
-  return { block, vars };
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// INJECT PROTECTION INTO CODE
+// APPLY TIMING WATERMARK
 // ══════════════════════════════════════════════════════════════════════
-function injectProtection(
-  originalCode: string,
-  securityBlock: string,
-  vars: Record<string, string>,
-  buyerName: string,
-  licenseKey: string,
-  scriptName: string,
-  scriptVersion: string,
-  watermark: number,
-  hashChain: number[]
-): string {
-  let code = originalCode;
-
-  // Replace old author names
-  const oldNames = ['Gb_dev', 'ABUSHADAD', 'CoreX', 'Empathy', 'Brodies_Curse', 'Optic', 'ZURN'];
-  for (const old of oldNames) {
-    code = code.replace(new RegExp(old.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), SCRIPT_AUTHOR);
-  }
-
-  // Find injection point (after first block of #define or at the top after comments)
-  const defineMatch = code.match(/((?:#define\s+\w+\s+.+\n)+)/);
-  if (defineMatch && defineMatch.index !== undefined) {
-    const insertPos = defineMatch.index + defineMatch[0].length;
-    code = code.substring(0, insertPos) + '\n' + securityBlock + '\n' + code.substring(insertPos);
-  } else {
-    // Insert after header comments
-    const headerEnd = code.search(/\n(?!\/\/)/);
-    if (headerEnd > 0) {
-      code = code.substring(0, headerEnd) + '\n' + securityBlock + '\n' + code.substring(headerEnd);
-    } else {
-      code = securityBlock + '\n' + code;
-    }
-  }
-
-  // Add license header
-  const displayName = buyerName.substring(0, 52).toUpperCase();
-  const header = `// ╔══════════════════════════════════════════════════════════════════╗
-// ║  ${scriptName} ${scriptVersion} - LICENSED EDITION
-// ║  by ${SCRIPT_AUTHOR}
-// ║
-// ║  LICENSED TO: ${displayName}
-// ║  LICENSE KEY: ${licenseKey}
-// ║  GENERATED:  ${new Date().toISOString().slice(0, 16)}
-// ║
-// ║  REDISTRIBUTION IS STRICTLY PROHIBITED
-// ║  THIS COPY IS WATERMARKED AND TRACEABLE
-// ╚══════════════════════════════════════════════════════════════════╝
-`;
-  code = header + code;
-
-  // Apply timing watermark (subtle offset on wait() values)
+function applyTimingWatermark(code: string, watermark: number): string {
   const timingOffset = watermark % 7;
-  if (timingOffset > 0) {
-    let count = 0;
-    code = code.replace(/wait\((\d+)\)/g, (match, val) => {
-      const v = parseInt(val);
-      if (v >= 10 && v <= 500 && count < 15) {
-        count++;
-        return `wait(${v + timingOffset})`;
-      }
-      return match;
-    });
-  }
+  if (timingOffset === 0) return code;
 
-  return code;
+  let count = 0;
+  return code.replace(/wait\((\d+)\)/g, (match, val) => {
+    const v = parseInt(val);
+    if (v >= 10 && v <= 500 && count < 15) {
+      count++;
+      return `wait(${v + timingOffset})`;
+    }
+    return match;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REPLACE OLD AUTHOR NAMES
+// ══════════════════════════════════════════════════════════════════════
+function replaceAuthors(code: string): string {
+  const oldNames = ['Gb_dev', 'ABUSHADAD', 'CoreX', 'Empathy', 'Brodies', 'Optic', 'ZURN'];
+  let result = code;
+  for (const old of oldNames) {
+    result = result.replace(new RegExp(old.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), SCRIPT_AUTHOR);
+  }
+  return result;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -243,23 +243,50 @@ export function generateLicense(
   scriptSlug: string
 ): LicenseResult {
   const { name: scriptName, version: scriptVersion } = detectScriptInfo(baseGpcCode);
-  
+
+  // Générer toutes les clés cryptographiques
   const { key: licenseKey } = generateLicenseKey(buyerName, buyerEmail);
   const seeds = generateIntegritySeeds(licenseKey);
   const watermark = generateWatermarkId(buyerName, licenseKey);
   const hashChain = generateHashChain(licenseKey);
   const keyInts = licenseKeyToInts(licenseKey);
 
-  const { block: securityBlock, vars } = generateSecurityBlock(
+  // Générer le bloc de sécurité (pure ASCII)
+  const securityBlock = generateSecurityBlock(
     buyerName, licenseKey, keyInts, seeds, watermark, hashChain
   );
 
-  const protectedCode = injectProtection(
-    baseGpcCode, securityBlock, vars,
-    buyerName, licenseKey, scriptName, scriptVersion,
-    watermark, hashChain
-  );
+  // Licence header (pure ASCII)
+  const displayName = buyerName.substring(0, 52).toUpperCase();
+  const header = `// ================================================================
+// ${scriptName} ${scriptVersion} - LICENSED EDITION
+// by ${SCRIPT_AUTHOR}
+//
+// LICENSED TO: ${displayName}
+// LICENSE KEY: ${licenseKey}
+// GENERATED:  ${new Date().toISOString().slice(0, 16)}
+//
+// REDISTRIBUTION IS STRICTLY PROHIBITED
+// THIS COPY IS WATERMARKED AND TRACEABLE
+// ================================================================
+`;
 
+  // Remplacer les anciens noms d'auteurs
+  let code = replaceAuthors(baseGpcCode);
+
+  // Trouver le point d'injection sûr (hors commentaires /* */)
+  const injectionPoint = findInjectionPoint(code);
+
+  // Assembler : header + code avant injection + security block + reste du code
+  const before = code.substring(0, injectionPoint);
+  const after = code.substring(injectionPoint);
+
+  let protectedCode = header + before + securityBlock + after;
+
+  // Appliquer le watermark de timing
+  protectedCode = applyTimingWatermark(protectedCode, watermark);
+
+  // Générer le nom de fichier
   const safeBuyer = buyerName.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 30);
   const safeSlug = scriptSlug.replace(/[^a-zA-Z0-9._-]/g, '_');
   const keySafe = licenseKey.replace(/-/g, '_');
