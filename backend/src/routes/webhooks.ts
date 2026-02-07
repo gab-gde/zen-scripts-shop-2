@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { stripe } from '../lib/stripe';
 import { supabase } from '../lib/supabase';
 import { generateLicense } from '../services/license-generator';
-import { getBaseScript, storeBuild, getDownloadUrl } from '../services/storage';
+import { getBaseScript, storeBuild, getDownloadUrl, getSecurityPdfBase64 } from '../services/storage';
 import { sendOrderConfirmationWithBuild, sendAdminNotification } from '../services/email';
 
 const router = Router();
@@ -34,7 +34,7 @@ router.post('/stripe', async (req: Request, res: Response) => {
       const amountTotal = session.amount_total;
       const currency = session.currency?.toUpperCase() || 'EUR';
 
-      // ← NOUVEAU: Récupérer le pseudo du champ custom Stripe
+      // Récupérer le pseudo du champ custom Stripe
       const pseudo = session.custom_fields?.find((f: any) => f.key === 'pseudo')?.text?.value 
                      || customerEmail?.split('@')[0] 
                      || 'Client';
@@ -55,7 +55,7 @@ router.post('/stripe', async (req: Request, res: Response) => {
           currency,
           stripe_session_id: session.id,
           payment_status: 'paid',
-          buyer_pseudo: pseudo, // ← NOUVEAU champ
+          buyer_pseudo: pseudo,
         })
         .select()
         .single();
@@ -64,21 +64,18 @@ router.post('/stripe', async (req: Request, res: Response) => {
         console.error('[Webhook] Erreur création commande:', orderError);
       }
 
-      // 2. ← NOUVEAU: Générer automatiquement le build chiffré
+      // 2. Générer automatiquement le build chiffré
       let buildInfo: any = null;
       let downloadUrl: string | null = null;
 
       try {
         console.log(`[Build] Génération du build pour ${pseudo}...`);
 
-        // Récupérer le script .gpc de base depuis Supabase Storage
         const baseCode = await getBaseScript(scriptSlug);
         
         if (baseCode) {
-          // Générer le build chiffré unique
           const result = generateLicense(baseCode, pseudo, customerEmail, scriptSlug);
 
-          // Stocker dans Supabase Storage
           const storagePath = await storeBuild(
             result.filename, 
             result.protectedCode, 
@@ -86,10 +83,8 @@ router.post('/stripe', async (req: Request, res: Response) => {
           );
 
           if (storagePath) {
-            // Générer le lien de téléchargement (valide 24h)
             downloadUrl = await getDownloadUrl(storagePath);
 
-            // Enregistrer le build dans la table builds
             const { error: buildError } = await supabase
               .from('builds')
               .insert({
@@ -118,36 +113,33 @@ router.post('/stripe', async (req: Request, res: Response) => {
         console.error('[Build] Erreur génération:', buildErr);
       }
 
-      // 3. Envoyer l'email au client
-      const amount = `${(amountTotal / 100).toFixed(2)} ${currency === 'EUR' ? '€' : currency}`;
-
-      if (downloadUrl && buildInfo) {
-        // Email AVEC lien de téléchargement automatique
-        await sendOrderConfirmationWithBuild(
-          customerEmail,
-          orderNumber,
-          scriptName,
-          amount,
-          pseudo,
-          buildInfo.licenseKey,
-          downloadUrl,
-          buildInfo.filename
-        );
-      } else {
-        // Fallback: email sans build (génération manuelle requise)
-        await sendOrderConfirmationWithBuild(
-          customerEmail,
-          orderNumber,
-          scriptName,
-          amount,
-          pseudo,
-          null,
-          null,
-          null
-        );
+      // 3. Charger le PDF de sécurité (en pièce jointe)
+      let securityPdf: string | null = null;
+      try {
+        securityPdf = await getSecurityPdfBase64();
+        if (securityPdf) {
+          console.log('[Email] PDF sécurité chargé pour pièce jointe');
+        }
+      } catch (pdfErr) {
+        console.warn('[Email] PDF sécurité non disponible:', pdfErr);
       }
 
-      // 4. Notifier l'admin
+      // 4. Envoyer l'email au client (avec build + PDF sécurité)
+      const amount = `${(amountTotal / 100).toFixed(2)} ${currency === 'EUR' ? '€' : currency}`;
+
+      await sendOrderConfirmationWithBuild(
+        customerEmail,
+        orderNumber,
+        scriptName,
+        amount,
+        pseudo,
+        buildInfo?.licenseKey || null,
+        downloadUrl,
+        buildInfo?.filename || null,
+        securityPdf // ← PDF en pièce jointe
+      );
+
+      // 5. Notifier l'admin
       await sendAdminNotification(
         orderNumber,
         scriptName,
@@ -158,7 +150,7 @@ router.post('/stripe', async (req: Request, res: Response) => {
         !!downloadUrl
       );
 
-      console.log(`[Webhook] ✅ Commande ${orderNumber} traitée complètement`);
+      console.log(`[Webhook] ✅ Commande ${orderNumber} traitée complètement (PDF: ${!!securityPdf})`);
 
     } catch (err) {
       console.error('[Webhook] Erreur traitement:', err);
