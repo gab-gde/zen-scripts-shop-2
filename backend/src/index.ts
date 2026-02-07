@@ -56,7 +56,6 @@ app.use('/api/admin/builds', adminBuildsRoutes);
 
 **Et n'oublie pas** d'ajouter la variable d'environnement dans Render (Backend → Environment) :
 ```
-LICENSE_MASTER_SECRET=change_ceci_en_un_secret_long_et_aleatoire
 
 // 404
 app.use((req: Request, res: Response) => {
