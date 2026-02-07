@@ -3,26 +3,26 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getScripts } from '@/lib/api';
-
-interface Script {
-  id: string;
-  name: string;
-  slug: string;
-  short_description: string;
-  price_cents: number;
-  images: string[];
-}
+import type { Script } from '@/lib/api';
 
 export default function ScriptsPage() {
   const [scripts, setScripts] = useState<Script[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
-    getScripts()
-      .then(setScripts)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+    const load = async () => {
+      try {
+        const data = await getScripts(search || undefined);
+        setScripts(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [search]);
 
   return (
     <div className="min-h-screen py-12">
@@ -32,41 +32,65 @@ export default function ScriptsPage() {
             Nos <span className="text-yellow-400">Scripts</span>
           </h1>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Chaque script est optimisé pour la dernière version du jeu et livré sous forme de build unique chiffré à votre nom.
+            Scripts premium pour Cronus Zen. Livraison instantanée par email après achat.
           </p>
         </div>
 
+        <div className="max-w-md mx-auto mb-10">
+          <input
+            type="text"
+            placeholder="Rechercher un script..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-surface border border-surface-border rounded-xl px-5 py-3 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-colors"
+          />
+        </div>
+
+        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-8 text-center">
+          <span className="text-green-400 text-sm">
+            ⚡ Livraison automatique — Recevez votre build chiffré unique par email immédiatement après paiement
+          </span>
+        </div>
+
         {loading ? (
-          <div className="text-center text-gray-400 py-20">Chargement...</div>
+          <div className="flex justify-center py-20">
+            <div className="w-12 h-12 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin" />
+          </div>
         ) : scripts.length === 0 ? (
-          <div className="text-center text-gray-400 py-20">Aucun script disponible pour le moment.</div>
+          <div className="text-center py-20 text-gray-400">
+            Aucun script trouvé.
+          </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {scripts.map((script) => (
-              <Link 
+              <Link
                 key={script.id}
                 href={`/scripts/${script.slug}`}
-                className="group bg-surface rounded-2xl border border-surface-border hover:border-yellow-500/50 transition-all overflow-hidden"
+                className="group bg-surface rounded-2xl border border-surface-border overflow-hidden hover:border-yellow-500/30 transition-all"
               >
-                {script.images && script.images[0] && (
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={script.images[0]} 
+                <div className="aspect-video relative overflow-hidden">
+                  {script.images?.[0] ? (
+                    <img
+                      src={script.images[0]}
                       alt={script.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                  </div>
-                )}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-yellow-400 transition-colors">
+                  ) : (
+                    <div className="w-full h-full bg-primary flex items-center justify-center">
+                      <span className="text-4xl">🎮</span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-bold mb-1 group-hover:text-yellow-400 transition-colors">
                     {script.name}
                   </h3>
-                  <p className="text-gray-400 text-sm mb-4">{script.short_description}</p>
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">{script.short_description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-yellow-400">
+                    <span className="text-yellow-400 font-bold text-xl">
                       {(script.price_cents / 100).toFixed(2)} €
                     </span>
-                    <span className="text-gray-500 text-sm group-hover:text-yellow-400 transition-colors">
+                    <span className="text-yellow-400 text-sm group-hover:translate-x-1 transition-transform">
                       Voir détails →
                     </span>
                   </div>
@@ -75,19 +99,6 @@ export default function ScriptsPage() {
             ))}
           </div>
         )}
-
-        {/* Info box - CHANGÉ: Plus de Marketplace */}
-        <div className="mt-16 bg-surface rounded-2xl border border-surface-border p-8 text-center">
-          <h2 className="text-xl font-bold mb-3">🔐 Livraison sécurisée par chiffrement</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Après achat, rejoignez notre Discord et fournissez votre pseudo. 
-            Nous générons un script unique chiffré à votre nom avec hash, sel et watermarks. 
-            Livraison sous 24h.
-          </p>
-          <Link href="/faq" className="text-yellow-400 hover:underline font-medium mt-4 inline-block">
-            Voir la FAQ complète →
-          </Link>
-        </div>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ const games = [
   { name: 'Call of Duty BO6', image: '/images/bo7.jpg', available: true },
   { name: 'DayZ', image: '/images/dayz.jpg', available: true },
   { name: 'Rust', image: '/images/rust.jpg', available: true },
-  { name: 'ARC Raiders', image: '/images/arcraiders.jpg', available: true },  // ← NOUVEAU
+  { name: 'ARC Raiders', image: '/images/arcraiders.jpg', available: true },
 ];
 
 export default function HomePage() {
@@ -35,7 +35,7 @@ export default function HomePage() {
           
           <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
             Dominez sur tous vos jeux préférés avec nos scripts Cronus Zen professionnels. 
-            Performance maximale, mises à jour régulières, support réactif.
+            Livraison instantanée, mises à jour régulières, support réactif.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -57,11 +57,11 @@ export default function HomePage() {
               Scripts disponibles pour <span className="text-yellow-400">tous vos jeux</span>
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Chaque script est optimisé pour la dernière version du jeu et livré avec un build unique chiffré à votre nom.
+              Chaque script est optimisé pour la dernière version du jeu et livré instantanément avec un build unique chiffré à votre nom.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {games.map((game) => (
               <Link 
                 key={game.name} 
@@ -100,6 +100,7 @@ export default function HomePage() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Comment ça <span className="text-yellow-400">marche ?</span>
             </h2>
+            <p className="text-gray-400">100% automatique, recevez votre script en quelques minutes</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -107,19 +108,19 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl">💳</span>
               </div>
-              <h3 className="text-xl font-bold mb-3">1. Achetez votre script</h3>
+              <h3 className="text-xl font-bold mb-3">1. Achetez</h3>
               <p className="text-gray-400">
-                Choisissez votre jeu, payez en toute sécurité par carte bancaire via Stripe.
+                Choisissez votre jeu, entrez votre pseudo et payez en toute sécurité par carte.
               </p>
             </div>
 
             <div className="text-center">
               <div className="w-16 h-16 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">🔐</span>
+                <span className="text-2xl">📧</span>
               </div>
-              <h3 className="text-xl font-bold mb-3">2. Recevez votre build unique</h3>
+              <h3 className="text-xl font-bold mb-3">2. Recevez par email</h3>
               <p className="text-gray-400">
-                Rejoignez notre Discord, fournissez votre pseudo. Nous générons un script chiffré unique lié à votre identité.
+                Votre build chiffré unique est généré automatiquement et envoyé par email avec un lien de téléchargement.
               </p>
             </div>
 
@@ -129,7 +130,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-bold mb-3">3. Flashez et jouez</h3>
               <p className="text-gray-400">
-                Chargez votre script dans Zen Studio, flashez-le sur votre Cronus Zen, et profitez !
+                Importez le .gpc dans Zen Studio, compilez et flashez sur votre Cronus Zen. C&apos;est parti !
               </p>
             </div>
           </div>
@@ -141,31 +142,31 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-surface rounded-2xl border border-surface-border p-8">
+              <span className="text-3xl mb-4 block">⚡</span>
+              <h3 className="text-xl font-bold mb-3">Livraison instantanée</h3>
+              <p className="text-gray-400">
+                Votre script chiffré est généré et envoyé automatiquement par email dès le paiement. Aucune attente.
+              </p>
+            </div>
+            <div className="bg-surface rounded-2xl border border-surface-border p-8">
               <span className="text-3xl mb-4 block">🔒</span>
               <h3 className="text-xl font-bold mb-3">Script chiffré & unique</h3>
               <p className="text-gray-400">
-                Chaque build est généré avec un hash cryptographique unique, des watermarks et fingerprints liés à votre pseudo. Impossible à partager.
+                Chaque build est généré avec un hash cryptographique, des watermarks et fingerprints liés à votre pseudo. Impossible à partager.
               </p>
             </div>
             <div className="bg-surface rounded-2xl border border-surface-border p-8">
               <span className="text-3xl mb-4 block">🔄</span>
               <h3 className="text-xl font-bold mb-3">Mises à jour à vie</h3>
               <p className="text-gray-400">
-                Chaque patch du jeu, nous mettons à jour le script et vous recevez un nouveau build chiffré gratuitement.
+                Chaque patch du jeu, nous mettons à jour le script et vous recevez un nouveau build chiffré gratuitement par email.
               </p>
             </div>
             <div className="bg-surface rounded-2xl border border-surface-border p-8">
               <span className="text-3xl mb-4 block">💬</span>
-              <h3 className="text-xl font-bold mb-3">Support Discord réactif</h3>
+              <h3 className="text-xl font-bold mb-3">Support réactif</h3>
               <p className="text-gray-400">
-                Notre équipe est disponible sur Discord pour vous aider avec l'installation et les réglages.
-              </p>
-            </div>
-            <div className="bg-surface rounded-2xl border border-surface-border p-8">
-              <span className="text-3xl mb-4 block">⚡</span>
-              <h3 className="text-xl font-bold mb-3">Performance optimale</h3>
-              <p className="text-gray-400">
-                Scripts optimisés pour la dernière version de chaque jeu. Anti-recoil, aim assist, skill moves et plus.
+                Notre équipe est disponible pour vous aider avec l&apos;installation et les réglages via la page support.
               </p>
             </div>
           </div>

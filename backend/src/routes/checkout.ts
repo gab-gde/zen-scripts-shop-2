@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { stripe } from '../lib/stripe';
-import { supabase, Script } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { config } from '../lib/config';
 
 const router = Router();
@@ -32,39 +32,50 @@ router.post('/create-session', async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'Script not found or not available' });
     }
 
-    const typedScript = script as Script;
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
       customer_email: email,
+
+      // ← NOUVEAU: Demande le pseudo/gamertag pendant le checkout
+      custom_fields: [
+        {
+          key: 'pseudo',
+          label: { type: 'custom', custom: 'Votre pseudo / gamertag' },
+          type: 'text',
+          optional: false,
+        },
+      ],
+
       line_items: [
         {
           price_data: {
-            currency: typedScript.currency.toLowerCase(),
+            currency: script.currency.toLowerCase(),
             product_data: {
-              name: typedScript.name,
-              description: typedScript.short_description,
-              images: typedScript.images.length > 0 ? [typedScript.images[0]] : undefined,
+              name: script.name,
+              description: script.short_description,
+              images: script.images?.length > 0 && script.images[0].startsWith('http')
+                ? [script.images[0]] 
+                : [],
             },
-            unit_amount: typedScript.price_cents,
+            unit_amount: script.price_cents,
           },
           quantity: 1,
         },
       ],
       metadata: {
-        scriptId: typedScript.id,
-        scriptName: typedScript.name,
+        script_id: script.id,
+        script_name: script.name,
+        script_slug: script.slug,
       },
       success_url: `${config.siteUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${config.siteUrl}/cancel`,
     });
 
-    console.log(`[CHECKOUT] Session created: ${session.id}`);
-    res.json({ success: true, url: session.url });
-  } catch (error) {
-    console.error('[CHECKOUT] Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to create checkout session' });
+    return res.json({ url: session.url });
+  } catch (error: any) {
+    console.error('[Checkout] Error:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -73,28 +84,20 @@ router.get('/session/:sessionId', async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
 
-    const { data: order, error } = await supabase
+    const { data: order } = await supabase
       .from('orders')
-      .select(`*, scripts (name)`)
+      .select('*, scripts(name, slug)')
       .eq('stripe_session_id', sessionId)
       .single();
 
-    if (error || !order) {
+    if (!order) {
       return res.status(404).json({ success: false, error: 'Order not found' });
     }
 
-    res.json({
-      success: true,
-      order: {
-        orderNumber: order.order_number,
-        scriptName: (order as any).scripts?.name || 'Script',
-        amount: `${(order.amount_cents / 100).toFixed(2)} ${order.currency.toUpperCase()}`,
-        email: order.email,
-      },
-    });
+    return res.json({ order });
   } catch (error) {
-    console.error('[CHECKOUT] Get session error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get session details' });
+    console.error('[Checkout] Session error:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

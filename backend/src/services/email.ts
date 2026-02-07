@@ -5,31 +5,87 @@ const FROM_EMAIL = process.env.FROM_EMAIL || 'contact@scriptszeus.eu';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@scriptszeus.eu';
 const DISCORD_INVITE = process.env.DISCORD_INVITE || 'discord.gg/scriptszeus';
 
-// ← CHANGÉ: Template email client - Plus de Marketplace
-export async function sendOrderConfirmation(
+// ══════════════════════════════════════════════════════════════════════
+// EMAIL CLIENT - Avec ou sans lien de téléchargement automatique
+// ══════════════════════════════════════════════════════════════════════
+export async function sendOrderConfirmationWithBuild(
   customerEmail: string,
   orderNumber: string,
   scriptName: string,
-  amount: string
+  amount: string,
+  pseudo: string,
+  licenseKey: string | null,
+  downloadUrl: string | null,
+  filename: string | null
 ) {
+  // Section téléchargement (si build généré automatiquement)
+  const downloadSection = downloadUrl ? `
+    <div style="background: linear-gradient(135deg, #0a2a0a 0%, #0a1a0a 100%); border: 2px solid #22c55e; border-radius: 12px; padding: 25px; margin-bottom: 25px; text-align: center;">
+      <h2 style="color: #22c55e; margin: 0 0 10px 0; font-size: 22px;">🎮 Votre script est prêt !</h2>
+      <p style="color: #9ca3af; font-size: 14px; margin: 0 0 20px 0;">
+        Build unique généré pour <strong style="color: #fff;">${pseudo}</strong>
+      </p>
+      <a href="${downloadUrl}" style="display: inline-block; background: #22c55e; color: #000; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
+        ⬇️ Télécharger ${filename || 'votre script'}
+      </a>
+      <p style="color: #6b7280; font-size: 12px; margin: 15px 0 0 0;">
+        ⏰ Ce lien expire dans 24 heures. Téléchargez votre script dès maintenant.
+      </p>
+      ${licenseKey ? `<p style="color: #6b7280; font-size: 12px; margin: 10px 0 0 0;">🔑 Clé de licence : <code style="color: #facc15; background: #1a1a2e; padding: 2px 8px; border-radius: 4px;">${licenseKey}</code></p>` : ''}
+    </div>
+
+    <div style="background: #16161f; border-radius: 12px; padding: 20px; margin-bottom: 25px; border: 1px solid #2a2a3a;">
+      <h3 style="color: #fff; margin: 0 0 15px 0; font-size: 16px;">📋 Installation en 3 étapes</h3>
+      <div style="margin-bottom: 10px;">
+        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">1</span>
+        <span style="color: #d1d5db; margin-left: 10px;">Ouvrez <strong>Zen Studio</strong> sur votre PC</span>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">2</span>
+        <span style="color: #d1d5db; margin-left: 10px;">Importez le fichier .gpc téléchargé → <strong>Compilez</strong></span>
+      </div>
+      <div>
+        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">3</span>
+        <span style="color: #d1d5db; margin-left: 10px;"><strong>Flashez</strong> sur votre Cronus Zen et jouez !</span>
+      </div>
+    </div>
+  ` : `
+    <div style="background: #16161f; border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #2a2a3a;">
+      <h2 style="color: #fff; margin: 0 0 20px 0; font-size: 18px;">📋 Prochaines étapes</h2>
+      <div style="margin-bottom: 12px;">
+        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">1</span>
+        <span style="color: #d1d5db; margin-left: 10px;">Rejoignez notre Discord : ${DISCORD_INVITE}</span>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">2</span>
+        <span style="color: #d1d5db; margin-left: 10px;">Postez dans #registration : commande ${orderNumber} + pseudo ${pseudo}</span>
+      </div>
+      <div>
+        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">3</span>
+        <span style="color: #d1d5db; margin-left: 10px;">Nous vous envoyons votre build chiffré sous 24h</span>
+      </div>
+    </div>
+  `;
+
   try {
     await resend.emails.send({
       from: `Scripts Zeus <${FROM_EMAIL}>`,
       to: customerEmail,
-      subject: `🎮 Commande confirmée - ${scriptName}`,
+      subject: downloadUrl
+        ? `🎮 Votre script ${scriptName} est prêt ! Téléchargez-le maintenant`
+        : `🎮 Commande confirmée - ${scriptName}`,
       html: `
         <div style="max-width: 600px; margin: 0 auto; background: #0a0a12; color: #fff; font-family: -apple-system, sans-serif;">
-          <!-- Header -->
           <div style="background: linear-gradient(135deg, #1a1a2e 0%, #0a0a12 100%); padding: 30px; text-align: center; border-bottom: 2px solid #facc15;">
             <h1 style="color: #facc15; margin: 0; font-size: 28px;">⚡ Scripts Zeus</h1>
             <p style="color: #9ca3af; margin: 5px 0 0 0;">Zen Premium</p>
           </div>
           
-          <!-- Content -->
           <div style="padding: 30px;">
-            <h2 style="color: #fff; margin: 0 0 20px 0;">Merci pour votre achat !</h2>
+            <h2 style="color: #fff; margin: 0 0 20px 0;">
+              ${downloadUrl ? '🎉 Votre script est prêt !' : 'Merci pour votre achat !'}
+            </h2>
             
-            <!-- Order details -->
             <div style="background: #16161f; border-radius: 12px; padding: 20px; margin-bottom: 25px; border: 1px solid #2a2a3a;">
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
@@ -41,62 +97,29 @@ export async function sendOrderConfirmation(
                   <td style="padding: 10px 0; color: #fff; font-weight: bold; text-align: right; border-bottom: 1px solid #2a2a3a;">${scriptName}</td>
                 </tr>
                 <tr>
+                  <td style="padding: 10px 0; color: #9ca3af; border-bottom: 1px solid #2a2a3a;">Pseudo</td>
+                  <td style="padding: 10px 0; color: #facc15; font-weight: bold; text-align: right; border-bottom: 1px solid #2a2a3a;">${pseudo}</td>
+                </tr>
+                <tr>
                   <td style="padding: 10px 0; color: #9ca3af;">Montant</td>
                   <td style="padding: 10px 0; color: #facc15; font-weight: bold; text-align: right; font-size: 20px;">${amount}</td>
                 </tr>
               </table>
             </div>
 
-            <!-- Steps - CHANGÉ: Plus de Marketplace -->
-            <div style="background: #16161f; border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #2a2a3a;">
-              <h2 style="color: #fff; margin: 0 0 20px 0; font-size: 18px;">📋 Prochaines étapes</h2>
-              
-              <div style="margin-bottom: 15px; display: flex; align-items: flex-start;">
-                <div style="background: #facc15; color: #0a0a12; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">1</div>
-                <div>
-                  <div style="color: #fff; font-weight: 600;">Rejoignez notre Discord</div>
-                  <div style="color: #9ca3af; font-size: 14px;">Lien : ${DISCORD_INVITE}</div>
-                </div>
-              </div>
-              
-              <div style="margin-bottom: 15px; display: flex; align-items: flex-start;">
-                <div style="background: #facc15; color: #0a0a12; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">2</div>
-                <div>
-                  <div style="color: #fff; font-weight: 600;">Postez dans #registration</div>
-                  <div style="color: #9ca3af; font-size: 14px;">Commande ${orderNumber} + votre pseudo</div>
-                </div>
-              </div>
-              
-              <div style="margin-bottom: 15px; display: flex; align-items: flex-start;">
-                <div style="background: #facc15; color: #0a0a12; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">3</div>
-                <div>
-                  <div style="color: #fff; font-weight: 600;">Recevez votre build chiffré unique</div>
-                  <div style="color: #9ca3af; font-size: 14px;">Nous générons un script .gpc unique lié à votre pseudo (sous 24h)</div>
-                </div>
-              </div>
+            ${downloadSection}
 
-              <div style="display: flex; align-items: flex-start;">
-                <div style="background: #facc15; color: #0a0a12; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">4</div>
-                <div>
-                  <div style="color: #fff; font-weight: 600;">Flashez avec Zen Studio</div>
-                  <div style="color: #9ca3af; font-size: 14px;">Importez le .gpc → Compilez → Flashez sur votre Cronus Zen</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Security notice - NOUVEAU -->
             <div style="background: #1a0a0a; border: 1px solid #dc2626; border-radius: 12px; padding: 15px; margin-bottom: 25px;">
               <p style="color: #f87171; margin: 0; font-size: 13px;">
-                🔐 <strong>Votre script est chiffré et unique.</strong> Il contient des watermarks et fingerprints liés à votre identité. Le partage est interdit et détectable.
+                🔐 <strong>Script chiffré et unique.</strong> Watermarks et fingerprints liés à "${pseudo}". Le partage est interdit et détectable.
               </p>
             </div>
 
             <p style="color: #9ca3af; font-size: 14px; text-align: center;">
-              Des questions ? Répondez à cet email ou contactez-nous sur Discord.
+              Questions ? Rejoignez notre Discord : ${DISCORD_INVITE}
             </p>
           </div>
           
-          <!-- Footer -->
           <div style="background: #16161f; padding: 20px; text-align: center; border-top: 1px solid #2a2a3a;">
             <p style="color: #4b5563; font-size: 12px; margin: 0;">
               © ${new Date().getFullYear()} Scripts Zeus - Zen Premium | Tous droits réservés
@@ -105,37 +128,47 @@ export async function sendOrderConfirmation(
         </div>
       `,
     });
-    console.log(`[Email] Confirmation envoyée à ${customerEmail}`);
+    console.log(`[Email] Confirmation envoyée à ${customerEmail} (build auto: ${!!downloadUrl})`);
   } catch (error) {
     console.error('[Email] Erreur envoi confirmation:', error);
   }
 }
 
-// Email admin notification
+// ══════════════════════════════════════════════════════════════════════
+// EMAIL ADMIN
+// ══════════════════════════════════════════════════════════════════════
 export async function sendAdminNotification(
   orderNumber: string,
   scriptName: string,
   customerEmail: string,
-  amount: string
+  amount: string,
+  pseudo: string,
+  licenseKey: string,
+  autoGenerated: boolean
 ) {
   try {
     await resend.emails.send({
       from: `Scripts Zeus <${FROM_EMAIL}>`,
       to: ADMIN_EMAIL,
-      subject: `💰 Nouvelle vente - ${scriptName} (${amount})`,
+      subject: `💰 ${autoGenerated ? '✅ AUTO' : '⚠️ MANUEL'} - ${scriptName} (${amount}) - ${pseudo}`,
       html: `
         <div style="max-width: 500px; margin: 0 auto; background: #0a0a12; color: #fff; font-family: sans-serif; padding: 30px; border-radius: 12px;">
           <h2 style="color: #facc15; margin-top: 0;">💰 Nouvelle vente !</h2>
+          
+          <div style="background: ${autoGenerated ? '#0a2a0a' : '#2a1a0a'}; border: 1px solid ${autoGenerated ? '#22c55e' : '#f59e0b'}; border-radius: 8px; padding: 12px; margin-bottom: 20px; text-align: center;">
+            <span style="color: ${autoGenerated ? '#22c55e' : '#f59e0b'}; font-weight: bold;">
+              ${autoGenerated ? '✅ BUILD GÉNÉRÉ AUTOMATIQUEMENT' : '⚠️ BUILD MANUEL REQUIS (pas de script de base trouvé)'}
+            </span>
+          </div>
+
           <table style="width: 100%;">
             <tr><td style="color: #9ca3af; padding: 8px 0;">Commande</td><td style="color: #fff; text-align: right;">${orderNumber}</td></tr>
             <tr><td style="color: #9ca3af; padding: 8px 0;">Script</td><td style="color: #fff; text-align: right;">${scriptName}</td></tr>
             <tr><td style="color: #9ca3af; padding: 8px 0;">Client</td><td style="color: #fff; text-align: right;">${customerEmail}</td></tr>
+            <tr><td style="color: #9ca3af; padding: 8px 0;">Pseudo</td><td style="color: #facc15; text-align: right; font-weight: bold;">${pseudo}</td></tr>
+            <tr><td style="color: #9ca3af; padding: 8px 0;">Clé licence</td><td style="color: #fff; text-align: right; font-family: monospace; font-size: 12px;">${licenseKey}</td></tr>
             <tr><td style="color: #9ca3af; padding: 8px 0;">Montant</td><td style="color: #facc15; text-align: right; font-size: 20px; font-weight: bold;">${amount}</td></tr>
           </table>
-          <hr style="border-color: #2a2a3a; margin: 20px 0;" />
-          <p style="color: #9ca3af; font-size: 13px;">
-            ⚠️ Pense à générer le build chiffré unique pour ce client une fois qu'il aura posté son pseudo sur Discord.
-          </p>
         </div>
       `,
     });
@@ -145,7 +178,9 @@ export async function sendAdminNotification(
   }
 }
 
-// Email support
+// ══════════════════════════════════════════════════════════════════════
+// EMAIL SUPPORT (inchangé)
+// ══════════════════════════════════════════════════════════════════════
 export async function sendSupportNotification(
   senderEmail: string,
   subject: string,

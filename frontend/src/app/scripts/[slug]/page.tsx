@@ -93,14 +93,13 @@ export default function ScriptDetailPage() {
 
               <ul className="space-y-3 mb-6 text-sm">
                 {[
-                  'Build unique chiffré à votre nom',
-                  'Livraison sous 24h via Discord',
-                  'Mises à jour gratuites à vie',
-                  'Support Discord inclus',
+                  '⚡ Livraison instantanée par email',
+                  '🔒 Build unique chiffré à votre nom',
+                  '🔄 Mises à jour gratuites à vie',
+                  '💬 Support inclus',
                 ].map((f, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <span className="text-yellow-400">✓</span>
-                    {f}
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
