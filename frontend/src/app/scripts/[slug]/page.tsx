@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { getScript, createCheckoutSession } from '@/lib/api';
+import { getScriptBySlug, createCheckoutSession } from '@/lib/api';
 
 interface Script {
   id: string;
@@ -26,7 +26,7 @@ export default function ScriptDetailPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await getScript(params.slug as string);
+        const data = await getScriptBySlug(params.slug as string);
         setScript(data);
       } catch (err) {
         console.error(err);
@@ -77,14 +77,12 @@ export default function ScriptDetailPage() {
 
         <div className="grid lg:grid-cols-3 gap-8 mt-6">
           <div className="lg:col-span-2">
-            {/* Images */}
             {script.images && script.images.length > 0 && (
               <div className="rounded-2xl overflow-hidden border border-surface-border mb-8">
                 <img src={script.images[0]} alt={script.name} className="w-full aspect-video object-cover" />
               </div>
             )}
 
-            {/* Description */}
             <div className="bg-surface rounded-2xl border border-surface-border p-8">
               <h2 className="text-2xl font-bold mb-6">Description</h2>
               <div className="prose-custom">
@@ -103,11 +101,10 @@ export default function ScriptDetailPage() {
                 <div className="text-4xl font-bold text-yellow-400">{(script.price_cents / 100).toFixed(2)} €</div>
               </div>
 
-              {/* ← CHANGÉ: Plus de "Distribution sécurisée Marketplace" */}
               <ul className="space-y-3 mb-6 text-sm">
                 {[
-                  'Build unique chiffré à votre nom',          // ← NOUVEAU
-                  'Livraison sous 24h via Discord',            // ← NOUVEAU
+                  'Build unique chiffré à votre nom',
+                  'Livraison sous 24h via Discord',
                   'Mises à jour gratuites à vie',
                   'Support Discord inclus',
                 ].map((f, i) => (
@@ -130,7 +127,6 @@ export default function ScriptDetailPage() {
                 Paiement sécurisé par Stripe
               </div>
 
-              {/* Platforms */}
               <div className="mt-6 pt-6 border-t border-surface-border">
                 <div className="text-sm text-gray-400 mb-3">Compatible avec</div>
                 <div className="flex flex-wrap gap-2">
@@ -140,7 +136,6 @@ export default function ScriptDetailPage() {
                 </div>
               </div>
 
-              {/* Sécurité - NOUVEAU */}
               <div className="mt-6 pt-6 border-t border-surface-border">
                 <div className="text-sm text-gray-400 mb-3">Protection</div>
                 <p className="text-xs text-gray-500">
