@@ -190,7 +190,7 @@ export async function sendSupportNotification(
     await resend.emails.send({
       from: `Scripts Zeus Support <${FROM_EMAIL}>`,
       to: ADMIN_EMAIL,
-      replyTo: senderEmail,
+      reply_to: senderEmail,
       subject: `[Support] ${subject}`,
       html: `
         <div style="max-width: 500px; margin: 0 auto; background: #0a0a12; color: #fff; font-family: sans-serif; padding: 30px; border-radius: 12px;">
@@ -207,3 +207,6 @@ export async function sendSupportNotification(
     console.error('[Email] Erreur envoi support:', error);
   }
 }
+
+// Alias pour compatibilité avec support.ts
+export const sendSupportNotificationEmail = sendSupportNotification;
