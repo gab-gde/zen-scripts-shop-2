@@ -1,24 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { getScriptBySlug, createCheckoutSession, Script } from '@/lib/api';
+import { getScript, createCheckoutSession } from '@/lib/api';
+
+interface Script {
+  id: string;
+  name: string;
+  slug: string;
+  short_description: string;
+  description: string;
+  price_cents: number;
+  images: string[];
+  platforms: string[];
+}
 
 export default function ScriptDetailPage() {
   const params = useParams();
-  const slug = params.slug as string;
   const [script, setScript] = useState<Script | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
-    if (slug) {
-      getScriptBySlug(slug).then(setScript).finally(() => setLoading(false));
-    }
-  }, [slug]);
+    const load = async () => {
+      try {
+        const data = await getScript(params.slug as string);
+        setScript(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [params.slug]);
 
   const handlePurchase = async () => {
     if (!script) return;
@@ -26,7 +43,8 @@ export default function ScriptDetailPage() {
     try {
       const { url } = await createCheckoutSession(script.id);
       if (url) window.location.href = url;
-    } catch {
+    } catch (err) {
+      console.error(err);
       setPurchasing(false);
     }
   };
@@ -34,7 +52,7 @@ export default function ScriptDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin" />
+        <div className="text-gray-400">Chargement...</div>
       </div>
     );
   }
@@ -43,9 +61,8 @@ export default function ScriptDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4">😕</div>
           <h1 className="text-2xl font-bold mb-4">Script non trouvé</h1>
-          <Link href="/scripts" className="text-yellow-400 hover:underline">← Retour aux scripts</Link>
+          <Link href="/scripts" className="text-yellow-400 hover:underline">Retour aux scripts</Link>
         </div>
       </div>
     );
@@ -58,14 +75,18 @@ export default function ScriptDetailPage() {
           ← Retour aux scripts
         </Link>
 
-        <div className="grid lg:grid-cols-3 gap-12 mt-6">
+        <div className="grid lg:grid-cols-3 gap-8 mt-6">
           <div className="lg:col-span-2">
-            {script.images[0] && (
-              <div className="aspect-video bg-surface rounded-2xl overflow-hidden mb-8 relative">
-                <Image src={script.images[0]} alt={script.name} fill className="object-cover" />
+            {/* Images */}
+            {script.images && script.images.length > 0 && (
+              <div className="rounded-2xl overflow-hidden border border-surface-border mb-8">
+                <img src={script.images[0]} alt={script.name} className="w-full aspect-video object-cover" />
               </div>
             )}
+
+            {/* Description */}
             <div className="bg-surface rounded-2xl border border-surface-border p-8">
+              <h2 className="text-2xl font-bold mb-6">Description</h2>
               <div className="prose-custom">
                 <ReactMarkdown>{script.description}</ReactMarkdown>
               </div>
@@ -82,8 +103,14 @@ export default function ScriptDetailPage() {
                 <div className="text-4xl font-bold text-yellow-400">{(script.price_cents / 100).toFixed(2)} €</div>
               </div>
 
+              {/* ← CHANGÉ: Plus de "Distribution sécurisée Marketplace" */}
               <ul className="space-y-3 mb-6 text-sm">
-                {['Livraison instantanée par email', 'Mises à jour gratuites à vie', 'Support Discord inclus', 'Distribution sécurisée Marketplace'].map((f, i) => (
+                {[
+                  'Build unique chiffré à votre nom',          // ← NOUVEAU
+                  'Livraison sous 24h via Discord',            // ← NOUVEAU
+                  'Mises à jour gratuites à vie',
+                  'Support Discord inclus',
+                ].map((f, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <span className="text-yellow-400">✓</span>
                     {f}
@@ -111,6 +138,14 @@ export default function ScriptDetailPage() {
                     <span key={p} className="bg-primary px-3 py-1 rounded-lg text-xs border border-surface-border">{p}</span>
                   ))}
                 </div>
+              </div>
+
+              {/* Sécurité - NOUVEAU */}
+              <div className="mt-6 pt-6 border-t border-surface-border">
+                <div className="text-sm text-gray-400 mb-3">Protection</div>
+                <p className="text-xs text-gray-500">
+                  🔐 Chaque script est généré avec un chiffrement unique (hash, sel, watermarks) lié à votre pseudo. Le partage est détectable et interdit.
+                </p>
               </div>
             </div>
           </div>
