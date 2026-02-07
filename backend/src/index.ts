@@ -2,7 +2,6 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { config } from './lib/config';
-
 import checkoutRoutes from './routes/checkout';
 import webhooksRoutes from './routes/webhooks';
 import scriptsRoutes from './routes/scripts';
@@ -12,11 +11,11 @@ import adminBuildsRoutes from './routes/admin-builds';
 
 const app = express();
 
-// CORS - Configuration pour cross-domain (Frontend et Backend sur différents domaines Render)
+// CORS
 app.use(
   cors({
     origin: config.frontendUrl,
-    credentials: true, // IMPORTANT: Requis pour les cookies cross-domain
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
@@ -52,10 +51,6 @@ app.use('/api/scripts', scriptsRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/builds', adminBuildsRoutes);
-```
-
-**Et n'oublie pas** d'ajouter la variable d'environnement dans Render (Backend → Environment) :
-```
 
 // 404
 app.use((req: Request, res: Response) => {
