@@ -16,10 +16,10 @@ export async function getBaseScript(scriptSlug: string): Promise<string | null> 
     return null;
   }
 
-  // Lire en ArrayBuffer puis décoder en Latin-1 pour préserver les caractères spéciaux
-  const arrayBuffer = await data.arrayBuffer();
-  const decoder = new TextDecoder('latin1');
-  return decoder.decode(arrayBuffer);
+  // Lire le contenu complet comme texte UTF-8 (préserve les caractères box-drawing)
+  const text = await data.text();
+  console.log(`[Storage] Script de base "${scriptSlug}" chargé: ${text.length} caractères, ${text.split('\n').length} lignes`);
+  return text;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -32,17 +32,15 @@ export async function storeBuild(
 ): Promise<string | null> {
   const path = `${orderId}/${filename}`;
 
-  // Encoder en Latin-1 pour préserver les caractères spéciaux des .gpc
-  const encoder = new TextEncoder();
-  const bytes = new Uint8Array(content.length);
-  for (let i = 0; i < content.length; i++) {
-    bytes[i] = content.charCodeAt(i) & 0xFF;
-  }
+  // Convertir en Buffer UTF-8 pour préserver tous les caractères
+  const buffer = Buffer.from(content, 'utf-8');
+
+  console.log(`[Storage] Upload build: ${filename} (${buffer.length} bytes)`);
 
   const { error } = await supabase.storage
     .from(BUILDS_BUCKET)
-    .upload(path, bytes, {
-      contentType: 'application/octet-stream', // ← Force téléchargement, pas affichage
+    .upload(path, buffer, {
+      contentType: 'application/octet-stream', // Force téléchargement
       upsert: true,
     });
 
@@ -51,6 +49,7 @@ export async function storeBuild(
     return null;
   }
 
+  console.log(`[Storage] Build uploadé: ${path}`);
   return path;
 }
 
@@ -58,13 +57,12 @@ export async function storeBuild(
 // GÉNÉRER UN LIEN DE TÉLÉCHARGEMENT TEMPORAIRE (1h)
 // ══════════════════════════════════════════════════════════════════════
 export async function getDownloadUrl(storagePath: string): Promise<string | null> {
-  // Extraire le nom du fichier pour le Content-Disposition
   const filename = storagePath.split('/').pop() || 'script.gpc';
 
   const { data, error } = await supabase.storage
     .from(BUILDS_BUCKET)
     .createSignedUrl(storagePath, 3600, {
-      download: filename, // ← Force le téléchargement avec le bon nom de fichier
+      download: filename,
     });
 
   if (error || !data) {
@@ -84,7 +82,7 @@ export async function regenerateDownloadUrl(storagePath: string, expiresIn = 864
   const { data, error } = await supabase.storage
     .from(BUILDS_BUCKET)
     .createSignedUrl(storagePath, expiresIn, {
-      download: filename, // ← Force le téléchargement
+      download: filename,
     });
 
   if (error || !data) {
