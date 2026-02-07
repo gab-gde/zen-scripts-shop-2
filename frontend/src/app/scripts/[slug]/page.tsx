@@ -5,17 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { getScriptBySlug, createCheckoutSession } from '@/lib/api';
-
-interface Script {
-  id: string;
-  name: string;
-  slug: string;
-  short_description: string;
-  description: string;
-  price_cents: number;
-  images: string[];
-  platforms: string[];
-}
+import type { Script } from '@/lib/api';
 
 export default function ScriptDetailPage() {
   const params = useParams();
