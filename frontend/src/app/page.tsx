@@ -4,11 +4,12 @@ const games = [
   { name: 'Rainbow Six Siege', image: '/images/r6.jpg', available: true },
   { name: 'EA FC 26', image: '/images/fc26.jpg', available: true },
   { name: 'PUBG', image: '/images/pubg.jpg', available: true },
-  { name: 'NBA 2K26', image: '/images/nba2k.jpg', available: true },       // ← CHANGÉ: 2K25 → 2K26
+  { name: 'NBA 2K26', image: '/images/nba2k.jpg', available: true },
   { name: 'Rocket League', image: '/images/rocket.jpg', available: true },
-  { name: 'Call of Duty BO7', image: '/images/bo7.jpg', available: true },
+  { name: 'Call of Duty BO6', image: '/images/bo7.jpg', available: true },
   { name: 'DayZ', image: '/images/dayz.jpg', available: true },
   { name: 'Rust', image: '/images/rust.jpg', available: true },
+  { name: 'ARC Raiders', image: '/images/arcraiders.jpg', available: true },  // ← NOUVEAU
 ];
 
 export default function HomePage() {
@@ -92,7 +93,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How it works - CHANGÉ: Plus de Marketplace */}
+      {/* How it works */}
       <section className="py-20 bg-surface/30">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-16">
