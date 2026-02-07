@@ -3,10 +3,10 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.FROM_EMAIL || 'contact@scriptszeus.eu';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@scriptszeus.eu';
-const DISCORD_INVITE = process.env.DISCORD_INVITE || 'discord.gg/scriptszeus';
+const SITE_URL = process.env.FRONTEND_URL || 'https://scriptszeus.eu';
 
 // ══════════════════════════════════════════════════════════════════════
-// EMAIL CLIENT - Avec ou sans lien de téléchargement automatique
+// EMAIL CLIENT - Build + PDF sécurité en pièce jointe
 // ══════════════════════════════════════════════════════════════════════
 export async function sendOrderConfirmationWithBuild(
   customerEmail: string,
@@ -16,9 +16,10 @@ export async function sendOrderConfirmationWithBuild(
   pseudo: string,
   licenseKey: string | null,
   downloadUrl: string | null,
-  filename: string | null
+  filename: string | null,
+  securityPdfBase64?: string | null
 ) {
-  // Section téléchargement (si build généré automatiquement)
+  // Section téléchargement
   const downloadSection = downloadUrl ? `
     <div style="background: linear-gradient(135deg, #0a2a0a 0%, #0a1a0a 100%); border: 2px solid #22c55e; border-radius: 12px; padding: 25px; margin-bottom: 25px; text-align: center;">
       <h2 style="color: #22c55e; margin: 0 0 10px 0; font-size: 22px;">🎮 Votre script est prêt !</h2>
@@ -52,20 +53,38 @@ export async function sendOrderConfirmationWithBuild(
   ` : `
     <div style="background: #16161f; border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #2a2a3a;">
       <h2 style="color: #fff; margin: 0 0 20px 0; font-size: 18px;">📋 Prochaines étapes</h2>
-      <div style="margin-bottom: 12px;">
-        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">1</span>
-        <span style="color: #d1d5db; margin-left: 10px;">Rejoignez notre Discord : ${DISCORD_INVITE}</span>
-      </div>
-      <div style="margin-bottom: 12px;">
-        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">2</span>
-        <span style="color: #d1d5db; margin-left: 10px;">Postez dans #registration : commande ${orderNumber} + pseudo ${pseudo}</span>
-      </div>
-      <div>
-        <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 50%; font-weight: bold; font-size: 12px;">3</span>
-        <span style="color: #d1d5db; margin-left: 10px;">Nous vous envoyons votre build chiffré sous 24h</span>
-      </div>
+      <p style="color: #d1d5db;">Votre build est en cours de préparation. Vous recevrez un email avec le lien de téléchargement très prochainement.</p>
     </div>
   `;
+
+  // Section sécurité (si PDF joint)
+  const securitySection = securityPdfBase64 ? `
+    <div style="background: linear-gradient(135deg, #1a0a0a 0%, #0a0a12 100%); border: 1px solid #dc2626; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+      <h3 style="color: #f87171; margin: 0 0 10px 0; font-size: 15px;">🔐 Document de Sécurité (en pièce jointe)</h3>
+      <p style="color: #9ca3af; margin: 0; font-size: 13px;">
+        Votre script est protégé par le <strong style="color: #fff;">Zeus_Prenium Security Framework v3.0</strong> 
+        (7 couches de protection). Consultez le PDF joint pour les détails complets.
+        Votre copie contient des watermarks forensiques, des hash chains et des fingerprints 
+        de timing uniques liés à <strong style="color: #facc15;">${pseudo}</strong>. 
+        Le partage est <strong style="color: #f87171;">strictement interdit</strong> et détectable.
+      </p>
+    </div>
+  ` : `
+    <div style="background: #1a0a0a; border: 1px solid #dc2626; border-radius: 12px; padding: 15px; margin-bottom: 25px;">
+      <p style="color: #f87171; margin: 0; font-size: 13px;">
+        🔐 <strong>Script chiffré et unique.</strong> Watermarks et fingerprints liés à "${pseudo}". Le partage est interdit et détectable.
+      </p>
+    </div>
+  `;
+
+  // Pièces jointes
+  const attachments: any[] = [];
+  if (securityPdfBase64) {
+    attachments.push({
+      filename: 'Zeus_Prenium_Security_Document.pdf',
+      content: securityPdfBase64,
+    });
+  }
 
   try {
     await resend.emails.send({
@@ -74,6 +93,7 @@ export async function sendOrderConfirmationWithBuild(
       subject: downloadUrl
         ? `🎮 Votre script ${scriptName} est prêt ! Téléchargez-le maintenant`
         : `🎮 Commande confirmée - ${scriptName}`,
+      attachments: attachments.length > 0 ? attachments : undefined,
       html: `
         <div style="max-width: 600px; margin: 0 auto; background: #0a0a12; color: #fff; font-family: -apple-system, sans-serif;">
           <div style="background: linear-gradient(135deg, #1a1a2e 0%, #0a0a12 100%); padding: 30px; text-align: center; border-bottom: 2px solid #facc15;">
@@ -109,26 +129,22 @@ export async function sendOrderConfirmationWithBuild(
 
             ${downloadSection}
 
-            <div style="background: #1a0a0a; border: 1px solid #dc2626; border-radius: 12px; padding: 15px; margin-bottom: 25px;">
-              <p style="color: #f87171; margin: 0; font-size: 13px;">
-                🔐 <strong>Script chiffré et unique.</strong> Watermarks et fingerprints liés à "${pseudo}". Le partage est interdit et détectable.
-              </p>
-            </div>
+            ${securitySection}
 
             <p style="color: #9ca3af; font-size: 14px; text-align: center;">
-              Questions ? Rejoignez notre Discord : ${DISCORD_INVITE}
+              Questions ? Contactez-nous via <a href="${SITE_URL}/support" style="color: #facc15;">notre page support</a>.
             </p>
           </div>
           
           <div style="background: #16161f; padding: 20px; text-align: center; border-top: 1px solid #2a2a3a;">
             <p style="color: #4b5563; font-size: 12px; margin: 0;">
-              © ${new Date().getFullYear()} Scripts Zeus - Zen Premium | Tous droits réservés
+              &copy; ${new Date().getFullYear()} Scripts Zeus - Zen Premium | Tous droits réservés
             </p>
           </div>
         </div>
       `,
     });
-    console.log(`[Email] Confirmation envoyée à ${customerEmail} (build auto: ${!!downloadUrl})`);
+    console.log(`[Email] Confirmation envoyée à ${customerEmail} (build auto: ${!!downloadUrl}, PDF: ${!!securityPdfBase64})`);
   } catch (error) {
     console.error('[Email] Erreur envoi confirmation:', error);
   }
@@ -157,7 +173,7 @@ export async function sendAdminNotification(
           
           <div style="background: ${autoGenerated ? '#0a2a0a' : '#2a1a0a'}; border: 1px solid ${autoGenerated ? '#22c55e' : '#f59e0b'}; border-radius: 8px; padding: 12px; margin-bottom: 20px; text-align: center;">
             <span style="color: ${autoGenerated ? '#22c55e' : '#f59e0b'}; font-weight: bold;">
-              ${autoGenerated ? '✅ BUILD GÉNÉRÉ AUTOMATIQUEMENT' : '⚠️ BUILD MANUEL REQUIS (pas de script de base trouvé)'}
+              ${autoGenerated ? '✅ BUILD AUTO + PDF SÉCURITÉ' : '⚠️ BUILD MANUEL REQUIS'}
             </span>
           </div>
 
@@ -179,7 +195,7 @@ export async function sendAdminNotification(
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// EMAIL SUPPORT (inchangé)
+// EMAIL SUPPORT
 // ══════════════════════════════════════════════════════════════════════
 export async function sendSupportNotification(
   senderEmail: string,
