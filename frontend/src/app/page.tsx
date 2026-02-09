@@ -34,8 +34,7 @@ export default function HomePage() {
           </h1>
           
           <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-            Dominez sur tous vos jeux préférés avec nos scripts Cronus Zen professionnels. 
-            Livraison instantanée, mises à jour régulières, support réactif.
+            Dominez sur tous vos jeux préférés avec nos scripts Cronus Zen professionnels, élaborés et créés par notre développeur expérimenté dans le domaine du script. Livraison instantanée, mises à jour régulières, support réactif.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
