@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 const games = [
+  { name: 'Fortnite', image: '/images/fortnite.jpg', available: true },
   { name: 'Rainbow Six Siege', image: '/images/r6.jpg', available: true },
   { name: 'EA FC 26', image: '/images/fc26.jpg', available: true },
   { name: 'PUBG', image: '/images/pubg.jpg', available: true },
