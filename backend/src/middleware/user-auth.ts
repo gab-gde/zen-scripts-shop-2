@@ -59,7 +59,7 @@ export function optionalUser(req: Request, res: Response, next: NextFunction): v
  */
 export function generateToken(payload: JwtPayload): string {
   return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
+    expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
   });
 }
 
