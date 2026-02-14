@@ -38,6 +38,22 @@ export const config = {
     password: requireEnv('ADMIN_PASSWORD'),
   },
 
+  jwt: {
+    secret: requireEnv('JWT_SECRET'),
+    expiresIn: '7d',
+  },
+
+  points: {
+    perEurSpent: 10,
+    subscriptionBonusMonthly: 200,
+    welcomeBonus: 100,
+  },
+
+  subscription: {
+    proPriceId: optionalEnv('STRIPE_PRO_PRICE_ID', ''),
+    elitePriceId: optionalEnv('STRIPE_ELITE_PRICE_ID', ''),
+  },
+
   siteUrl: requireEnv('SITE_URL'),
   frontendUrl: optionalEnv('FRONTEND_URL', 'http://localhost:3000'),
 

@@ -4,14 +4,19 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { getScriptBySlug, createCheckoutSession } from '@/lib/api';
+import { getScriptBySlug, createCheckoutSession, validateDiscountCode } from '@/lib/api';
+import { useAuth } from '@/components/AuthProvider';
 import type { Script } from '@/lib/api';
 
 export default function ScriptDetailPage() {
   const params = useParams();
+  const { user } = useAuth();
   const [script, setScript] = useState<Script | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountValid, setDiscountValid] = useState<{ valid: boolean; percent: number } | null>(null);
+  const [validatingCode, setValidatingCode] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -27,11 +32,24 @@ export default function ScriptDetailPage() {
     load();
   }, [params.slug]);
 
+  const handleValidateCode = async () => {
+    if (!discountCode.trim()) return;
+    setValidatingCode(true);
+    try {
+      const result = await validateDiscountCode(discountCode.trim());
+      setDiscountValid({ valid: result.valid, percent: result.discount_percent });
+    } catch {
+      setDiscountValid({ valid: false, percent: 0 });
+    }
+    setValidatingCode(false);
+  };
+
   const handlePurchase = async () => {
     if (!script) return;
     setPurchasing(true);
     try {
-      const { url } = await createCheckoutSession(script.id);
+      const code = discountValid?.valid ? discountCode.trim() : undefined;
+      const { url } = await createCheckoutSession(script.id, code);
       if (url) window.location.href = url;
     } catch (err) {
       console.error(err);
@@ -39,10 +57,18 @@ export default function ScriptDetailPage() {
     }
   };
 
+  const getFinalPrice = () => {
+    if (!script) return 0;
+    if (discountValid?.valid && discountValid.percent > 0) {
+      return script.price_cents * (1 - discountValid.percent / 100);
+    }
+    return script.price_cents;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400">Chargement...</div>
+        <div className="w-12 h-12 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin" />
       </div>
     );
   }
@@ -85,10 +111,62 @@ export default function ScriptDetailPage() {
             <div className="sticky top-24 bg-surface rounded-2xl border border-surface-border p-6">
               <h1 className="text-2xl font-bold mb-2">{script.name}</h1>
               <p className="text-gray-400 text-sm mb-6">{script.short_description}</p>
-              
+
               <div className="mb-6 pb-6 border-b border-surface-border">
                 <div className="text-sm text-gray-400 mb-1">Prix</div>
-                <div className="text-4xl font-bold text-yellow-400">{(script.price_cents / 100).toFixed(2)} €</div>
+                {discountValid?.valid ? (
+                  <div>
+                    <span className="text-lg text-gray-500 line-through mr-2">
+                      {(script.price_cents / 100).toFixed(2)} €
+                    </span>
+                    <span className="text-4xl font-bold text-yellow-400">
+                      {(getFinalPrice() / 100).toFixed(2)} €
+                    </span>
+                    <span className="ml-2 text-sm bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
+                      -{discountValid.percent}%
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-4xl font-bold text-yellow-400">
+                    {(script.price_cents / 100).toFixed(2)} €
+                  </div>
+                )}
+              </div>
+
+              {/* Points info */}
+              {user && (
+                <div className="mb-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3">
+                  <div className="text-xs text-gray-400">Cet achat vous rapportera</div>
+                  <div className="text-yellow-400 font-bold">
+                    +{Math.floor((getFinalPrice() / 100) * 10)} points
+                  </div>
+                </div>
+              )}
+
+              {/* Discount code */}
+              <div className="mb-6">
+                <label className="text-sm text-gray-400 mb-2 block">Code de réduction</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={discountCode}
+                    onChange={(e) => { setDiscountCode(e.target.value); setDiscountValid(null); }}
+                    placeholder="ZS-OR-XXXX"
+                    className="flex-1 bg-primary border border-surface-border rounded-lg px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none"
+                  />
+                  <button
+                    onClick={handleValidateCode}
+                    disabled={validatingCode || !discountCode.trim()}
+                    className="px-3 py-2 bg-surface-light border border-surface-border rounded-lg text-sm hover:border-yellow-500/30 transition-colors disabled:opacity-50"
+                  >
+                    {validatingCode ? '...' : 'Appliquer'}
+                  </button>
+                </div>
+                {discountValid !== null && (
+                  <p className={`text-xs mt-1 ${discountValid.valid ? 'text-green-400' : 'text-red-400'}`}>
+                    {discountValid.valid ? `✓ Code valide : -${discountValid.percent}%` : '✗ Code invalide ou expiré'}
+                  </p>
+                )}
               </div>
 
               <ul className="space-y-3 mb-6 text-sm">
@@ -97,6 +175,7 @@ export default function ScriptDetailPage() {
                   '🔒 Build unique chiffré à votre nom',
                   '🔄 Mises à jour gratuites à vie',
                   '💬 Support inclus',
+                  user ? `💎 +${Math.floor((getFinalPrice() / 100) * 10)} points de fidélité` : '💎 Créez un compte pour gagner des points',
                 ].map((f, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <span>{f}</span>
@@ -104,17 +183,25 @@ export default function ScriptDetailPage() {
                 ))}
               </ul>
 
-              <button 
-                onClick={handlePurchase} 
-                disabled={purchasing} 
+              <button
+                onClick={handlePurchase}
+                disabled={purchasing}
                 className="w-full btn-zeus py-4 rounded-xl disabled:opacity-50"
               >
-                {purchasing ? 'Redirection...' : `Acheter - ${(script.price_cents / 100).toFixed(2)} €`}
+                {purchasing ? 'Redirection...' : `Acheter — ${(getFinalPrice() / 100).toFixed(2)} €`}
               </button>
 
               <div className="mt-4 text-center text-xs text-gray-500">
                 Paiement sécurisé par Stripe
               </div>
+
+              {!user && (
+                <div className="mt-4 text-center">
+                  <Link href="/register" className="text-xs text-yellow-400 hover:underline">
+                    Créez un compte pour gagner des points et accéder à votre dashboard →
+                  </Link>
+                </div>
+              )}
 
               <div className="mt-6 pt-6 border-t border-surface-border">
                 <div className="text-sm text-gray-400 mb-3">Compatible avec</div>

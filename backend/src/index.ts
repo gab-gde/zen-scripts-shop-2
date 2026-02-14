@@ -8,6 +8,9 @@ import scriptsRoutes from './routes/scripts';
 import supportRoutes from './routes/support';
 import adminRoutes from './routes/admin';
 import adminBuildsRoutes from './routes/admin-builds';
+import authRoutes from './routes/auth';
+import userRoutes from './routes/user';
+import subscriptionRoutes from './routes/subscription';
 
 const app = express();
 
@@ -21,13 +24,13 @@ app.use(
   })
 );
 
-// Trust proxy (important pour Render)
+// Trust proxy (important for Render)
 app.set('trust proxy', 1);
 
-// Webhook Stripe - raw body AVANT express.json()
+// Webhook Stripe - raw body BEFORE express.json()
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 
-// JSON parser pour les autres routes
+// JSON parser for other routes
 app.use(express.json());
 
 // Cookie parser
@@ -45,6 +48,9 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/webhooks', webhooksRoutes);
 app.use('/api/scripts', scriptsRoutes);
@@ -67,10 +73,12 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 app.listen(config.port, () => {
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║               ZEN SCRIPTS SHOP - BACKEND API                 ║
+║              ZEN SCRIPTS SHOP - BACKEND API V2               ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  🚀 Server running on port ${String(config.port).padEnd(32)}║
 ║  🌍 Frontend: ${config.frontendUrl.substring(0, 44).padEnd(44)}║
+║  🔐 Auth: JWT + Cookie                                      ║
+║  💎 Points & Subscriptions: Active                           ║
 ╚══════════════════════════════════════════════════════════════╝
   `);
 });
