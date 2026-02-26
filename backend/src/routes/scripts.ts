@@ -10,7 +10,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     let query = supabase
       .from('scripts')
-      .select('id, name, slug, short_description, price_cents, currency, images, is_active, created_at')
+      .select('id, name, slug, short_description, price_cents, currency, images, video_url, is_active, created_at')
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 

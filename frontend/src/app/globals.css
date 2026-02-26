@@ -15,6 +15,39 @@ body { -webkit-font-smoothing: antialiased; }
 .btn-zeus { @apply bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary font-bold shadow-lg shadow-yellow-500/20; }
 .btn-zeus:hover { box-shadow: 0 0 30px rgba(250, 204, 21, 0.3); }
 
+/* ═══ Video Showcase Styles ═══ */
+.video-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.video-card:hover {
+  z-index: 10;
+}
+
+/* Subtle shine effect on video cards */
+.video-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(250, 204, 21, 0.03),
+    transparent
+  );
+  transition: left 0.6s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.video-card:hover::before {
+  left: 100%;
+}
+
+/* ═══ Prose styles ═══ */
 .prose-custom h1 { @apply text-2xl font-bold text-white mb-4 mt-8; }
 .prose-custom h2 { @apply text-xl font-semibold text-white mb-3 mt-6; }
 .prose-custom h3 { @apply text-lg font-semibold text-white mb-2 mt-4; }

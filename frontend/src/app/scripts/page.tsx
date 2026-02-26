@@ -62,41 +62,54 @@ export default function ScriptsPage() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {scripts.map((script) => (
-              <Link
-                key={script.id}
-                href={`/scripts/${script.slug}`}
-                className="group bg-surface rounded-2xl border border-surface-border overflow-hidden hover:border-yellow-500/30 transition-all"
-              >
-                <div className="aspect-video relative overflow-hidden">
-                  {script.images?.[0] ? (
-                    <img
-                      src={script.images[0]}
-                      alt={script.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-primary flex items-center justify-center">
-                      <span className="text-4xl">🎮</span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-5">
-                  <h3 className="text-lg font-bold mb-1 group-hover:text-yellow-400 transition-colors">
-                    {script.name}
-                  </h3>
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">{script.short_description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-yellow-400 font-bold text-xl">
-                      {(script.price_cents / 100).toFixed(2)} €
-                    </span>
-                    <span className="text-yellow-400 text-sm group-hover:translate-x-1 transition-transform">
-                      Voir détails →
-                    </span>
+            {scripts.map((script) => {
+              const hasVideo = script.video_url && script.video_url.trim() !== '';
+              return (
+                <Link
+                  key={script.id}
+                  href={`/scripts/${script.slug}`}
+                  className="group bg-surface rounded-2xl border border-surface-border overflow-hidden hover:border-yellow-500/30 transition-all"
+                >
+                  <div className="aspect-video relative overflow-hidden">
+                    {script.images?.[0] ? (
+                      <img
+                        src={script.images[0]}
+                        alt={script.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-primary flex items-center justify-center">
+                        <span className="text-4xl">🎮</span>
+                      </div>
+                    )}
+
+                    {/* Video badge */}
+                    {hasVideo && (
+                      <div className="absolute top-2 left-2 z-10">
+                        <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-2.5 py-1 border border-red-500/30">
+                          <svg className="w-3 h-3 text-red-400" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                          <span className="text-[10px] text-white/90 font-medium tracking-wide uppercase">Démo</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </Link>
-            ))}
+                  <div className="p-5">
+                    <h3 className="text-lg font-bold mb-1 group-hover:text-yellow-400 transition-colors">
+                      {script.name}
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-4 line-clamp-2">{script.short_description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-yellow-400 font-bold text-xl">
+                        {(script.price_cents / 100).toFixed(2)} €
+                      </span>
+                      <span className="text-yellow-400 text-sm group-hover:translate-x-1 transition-transform">
+                        Voir détails →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

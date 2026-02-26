@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import VideoShowcaseWrapper from '@/components/VideoShowcaseWrapper';
 
 const games = [
   { name: 'Fortnite', image: '/images/fortnite.jpg', available: true },
@@ -48,6 +49,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          VIDEO SHOWCASE - Scrolling Demo Reel
+          ═══════════════════════════════════════════════════════════════ */}
+      <VideoShowcaseWrapper />
 
       {/* Games Grid */}
       <section className="py-20">
