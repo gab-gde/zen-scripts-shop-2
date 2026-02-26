@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 interface VideoPlayerProps {
   url: string;
@@ -8,42 +8,25 @@ interface VideoPlayerProps {
   poster?: string;
 }
 
+function getYoutubeId(url: string): string | null {
+  if (url.includes('youtu.be/')) {
+    return url.split('youtu.be/')[1]?.split('?')[0]?.split('&')[0] || null;
+  }
+  if (url.includes('v=')) {
+    return url.split('v=')[1]?.split('&')[0] || null;
+  }
+  if (url.includes('youtube.com/embed/')) {
+    return url.split('embed/')[1]?.split('?')[0] || null;
+  }
+  return null;
+}
+
 export default function VideoPlayer({ url, title, poster }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showControls, setShowControls] = useState(true);
+  const [playing, setPlaying] = useState(false);
 
   const isYoutube = url.includes('youtube.com') || url.includes('youtu.be');
-
-  function getYoutubeEmbedUrl(ytUrl: string): string {
-    let videoId = '';
-    if (ytUrl.includes('youtu.be/')) {
-      videoId = ytUrl.split('youtu.be/')[1]?.split('?')[0] || '';
-    } else if (ytUrl.includes('v=')) {
-      videoId = ytUrl.split('v=')[1]?.split('&')[0] || '';
-    }
-    return `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1&playsinline=1`;
-  }
-
-  function handlePlay() {
-    if (videoRef.current) {
-      videoRef.current.play();
-      setIsPlaying(true);
-      setShowControls(false);
-    }
-  }
-
-  function handleVideoClick() {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-      setIsPlaying(true);
-    } else {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    }
-    setShowControls(!isPlaying);
-  }
+  const ytId = isYoutube ? getYoutubeId(url) : null;
+  const thumbnailUrl = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : poster;
 
   return (
     <div className="rounded-2xl overflow-hidden border border-surface-border bg-black relative group">
@@ -66,52 +49,53 @@ export default function VideoPlayer({ url, title, poster }: VideoPlayerProps) {
 
       {/* Video area */}
       <div className="aspect-video relative">
-        {isYoutube ? (
-          <iframe
-            src={getYoutubeEmbedUrl(url)}
-            className="absolute inset-0 w-full h-full"
-            allow="autoplay; encrypted-media; fullscreen"
-            allowFullScreen
-            loading="lazy"
-            style={{ border: 0 }}
-          />
-        ) : (
-          <>
+        {playing ? (
+          /* Embed actif */
+          isYoutube && ytId ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
+              className="absolute inset-0 w-full h-full"
+              allow="autoplay; encrypted-media; fullscreen"
+              allowFullScreen
+              style={{ border: 0 }}
+            />
+          ) : (
             <video
-              ref={videoRef}
               src={url}
               poster={poster}
               playsInline
-              controls={isPlaying}
-              preload="metadata"
-              onClick={handleVideoClick}
-              onEnded={() => { setIsPlaying(false); setShowControls(true); }}
-              className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+              controls
+              autoPlay
+              className="absolute inset-0 w-full h-full object-cover"
             />
-
-            {/* Play overlay */}
-            {showControls && !isPlaying && (
-              <div
-                className="absolute inset-0 flex items-center justify-center bg-black/40 cursor-pointer transition-all"
-                onClick={handlePlay}
-              >
-                <div className="relative">
-                  {/* Glow ring */}
-                  <div className="absolute inset-0 w-20 h-20 -m-2 bg-yellow-500/20 rounded-full animate-ping" style={{ animationDuration: '2s' }} />
-                  <div className="w-16 h-16 bg-yellow-500/90 backdrop-blur rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/40 hover:bg-yellow-400 hover:scale-110 transition-all duration-300">
-                    <svg className="w-7 h-7 text-primary ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="absolute bottom-6 left-0 right-0 text-center">
-                  <span className="bg-black/60 backdrop-blur-sm text-white/80 text-sm px-4 py-1.5 rounded-full">
-                    Cliquez pour voir la démo
-                  </span>
+          )
+        ) : (
+          /* Thumbnail + Play button */
+          <div
+            className="absolute inset-0 cursor-pointer"
+            onClick={() => setPlaying(true)}
+          >
+            <img
+              src={thumbnailUrl || ''}
+              alt={title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center transition-all hover:bg-black/30">
+              <div className="relative">
+                <div className="absolute inset-0 w-20 h-20 -m-2 bg-yellow-500/20 rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+                <div className="w-16 h-16 bg-yellow-500/90 backdrop-blur rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/40 hover:bg-yellow-400 hover:scale-110 transition-all duration-300">
+                  <svg className="w-7 h-7 text-primary ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
                 </div>
               </div>
-            )}
-          </>
+              <div className="absolute bottom-6 left-0 right-0 text-center">
+                <span className="bg-black/60 backdrop-blur-sm text-white/80 text-sm px-4 py-1.5 rounded-full">
+                  Cliquez pour voir la démo
+                </span>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

@@ -11,7 +11,6 @@ export default function VideoShowcaseWrapper() {
     async function load() {
       try {
         const scripts = await getScripts();
-        // Filter scripts that have a video_url
         const withVideos = scripts
           .filter((s: any) => s.video_url && s.video_url.trim() !== '')
           .map((s: any) => ({
@@ -19,6 +18,7 @@ export default function VideoShowcaseWrapper() {
             name: s.name,
             video_url: s.video_url,
             short_description: s.short_description,
+            images: s.images || [],
           }));
         setVideos(withVideos);
       } catch (err) {
