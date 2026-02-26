@@ -3,7 +3,6 @@ import VideoShowcaseWrapper from '@/components/VideoShowcaseWrapper';
 
 const games = [
   { name: 'Fortnite', image: '/images/fortnite.jpg', available: true },
-  { name: 'Warzone', image: '/images/warzone.jpg', available: true },
   { name: 'Rainbow Six Siege', image: '/images/r6.jpg', available: true },
   { name: 'EA FC 26', image: '/images/fc26.jpg', available: true },
   { name: 'PUBG', image: '/images/pubg.jpg', available: true },
@@ -13,6 +12,7 @@ const games = [
   { name: 'DayZ', image: '/images/dayz.jpg', available: true },
   { name: 'Rust', image: '/images/rust.jpg', available: true },
   { name: 'ARC Raiders', image: '/images/arcraiders.jpg', available: true },
+  { name: 'Warzone', image: '/images/warzone.jpg', available: true },
 ];
 
 export default function HomePage() {
@@ -51,9 +51,106 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════════════════════════
+          TRUST / REASSURANCE SECTION
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="py-16 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-yellow-500/[0.02] to-transparent" />
+        <div className="max-w-5xl mx-auto px-4 relative z-10">
+          {/* Main trust banner */}
+          <div className="bg-gradient-to-br from-surface via-surface to-yellow-500/[0.03] rounded-3xl border border-yellow-500/20 p-8 md:p-12 relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+            <div className="relative z-10">
+              {/* Header */}
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-1.5 mb-5">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                  <span className="text-sm text-green-400 font-medium">Qualité vérifiée</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                  Testés en <span className="text-yellow-400">conditions réelles</span> par le développeur
+                </h2>
+                <p className="text-gray-400 max-w-2xl mx-auto">
+                  Chaque script est développé, testé et optimisé personnellement avant d&apos;être mis en vente. Pas de revente, pas d&apos;intermédiaire — vous achetez directement au créateur.
+                </p>
+              </div>
+
+              {/* Trust points grid */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-primary/50 rounded-2xl border border-surface-border p-5 text-center hover:border-yellow-500/20 transition-colors">
+                  <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">🎮</span>
+                  </div>
+                  <h3 className="font-bold text-sm mb-1.5">Testé en jeu</h3>
+                  <p className="text-gray-500 text-xs leading-relaxed">
+                    Chaque script est testé en parties réelles sur PS5 &amp; Xbox avant publication
+                  </p>
+                </div>
+
+                <div className="bg-primary/50 rounded-2xl border border-surface-border p-5 text-center hover:border-yellow-500/20 transition-colors">
+                  <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">👨‍💻</span>
+                  </div>
+                  <h3 className="font-bold text-sm mb-1.5">Développeur unique</h3>
+                  <p className="text-gray-500 text-xs leading-relaxed">
+                    Un seul développeur passionné — contact direct, support réactif, sans intermédiaire
+                  </p>
+                </div>
+
+                <div className="bg-primary/50 rounded-2xl border border-surface-border p-5 text-center hover:border-yellow-500/20 transition-colors">
+                  <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">🔄</span>
+                  </div>
+                  <h3 className="font-bold text-sm mb-1.5">Mises à jour régulières</h3>
+                  <p className="text-gray-500 text-xs leading-relaxed">
+                    Scripts mis à jour à chaque patch du jeu pour garantir un fonctionnement optimal
+                  </p>
+                </div>
+
+                <div className="bg-primary/50 rounded-2xl border border-surface-border p-5 text-center hover:border-yellow-500/20 transition-colors">
+                  <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">🛡️</span>
+                  </div>
+                  <h3 className="font-bold text-sm mb-1.5">Build unique chiffré</h3>
+                  <p className="text-gray-500 text-xs leading-relaxed">
+                    Chaque achat génère un build crypté unique lié à votre pseudo — impossible à copier
+                  </p>
+                </div>
+              </div>
+
+              {/* Bottom stat bar */}
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-6 md:gap-10 pt-6 border-t border-surface-border/50">
+                <div className="text-center">
+                  <div className="text-2xl font-black text-yellow-400">10+</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Jeux supportés</div>
+                </div>
+                <div className="w-px h-8 bg-surface-border hidden md:block" />
+                <div className="text-center">
+                  <div className="text-2xl font-black text-yellow-400">24h</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Support max</div>
+                </div>
+                <div className="w-px h-8 bg-surface-border hidden md:block" />
+                <div className="text-center">
+                  <div className="text-2xl font-black text-yellow-400">100%</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Fait en France</div>
+                </div>
+                <div className="w-px h-8 bg-surface-border hidden md:block" />
+                <div className="text-center">
+                  <div className="text-2xl font-black text-green-400">✓</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Paiement Stripe sécurisé</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
           VIDEO SHOWCASE - Scrolling Demo Reel
-          ═══════════════════════════════════════════════════════════════ */}
+          ══════════════════════════════════════════════════════════════ */}
       <VideoShowcaseWrapper />
 
       {/* Games Grid */}
