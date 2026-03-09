@@ -48,18 +48,6 @@ function generateWatermarkId(buyerName: string, licenseKey: string): number {
   return parseInt(h.substring(0, 8), 16) % 100000;
 }
 
-function generateHashChain(licenseKey: string): number[] {
-  const chain: number[] = [];
-  let current = licenseKey;
-  for (let i = 0; i < 12; i++) {
-    const h = crypto.createHash('sha256').update(`${current}:${i}`).digest('hex');
-    const val = parseInt(h.substring(0, 3), 16) % 255;
-    chain.push(val);
-    current = h;
-  }
-  return chain;
-}
-
 function licenseKeyToInts(licenseKey: string): number[] {
   const parts = licenseKey.replace('ZP-', '').split('-');
   return parts.map(part => {
@@ -78,18 +66,15 @@ function detectScriptInfo(code: string): { name: string; version: string } {
   let name = 'Unknown_Script';
   let version = 'V1';
 
-  // Chercher le nom dans les commentaires (premières 100 lignes)
   const lines = code.split('\n').slice(0, 100);
   for (const line of lines) {
-    // Pattern: "MINGO ATTACKERS" ou "Script Name: ..." ou nom en majuscules
-    const nameMatch = line.match(/(?:MINGO\s+\w+|Script\s*[:=]\s*(.+)|^\s*\*?\s*([A-Z][A-Z0-9_ ]{5,}(?:PRO|PREMIUM|ULTRA|DOMINATOR|PRECISION|MASTER|SURVIVOR)))/i);
+    const nameMatch = line.match(/(?:Script\s*[:=]\s*(.+)|^\s*\*?\s*([A-Z][A-Z0-9_ ]{5,}(?:PRO|PREMIUM|ULTRA|DOMINATOR|PRECISION|MASTER|SURVIVOR)))/i);
     if (nameMatch) {
       name = (nameMatch[1] || nameMatch[2] || nameMatch[0]).trim().replace(/[^a-zA-Z0-9_ -]/g, '').replace(/\s+/g, '_');
       if (name.length > 3) break;
     }
   }
 
-  // Chercher la version
   const verMatch = code.match(/(?:Version|Ver|V)\s*[:=]?\s*([\d.]+)/i);
   if (verMatch) version = `V${verMatch[1]}`;
 
@@ -97,17 +82,12 @@ function detectScriptInfo(code: string): { name: string; version: string } {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// FIND SAFE INJECTION POINT (outside of comments)
+// FIND SAFE INJECTION POINT
 // ══════════════════════════════════════════════════════════════════════
 function findInjectionPoint(code: string): number {
-  // Stratégie: trouver la position APRÈS le dernier */ du header,
-  // puis avant la première ligne de code réelle
-
-  let pos = 0;
   let inBlockComment = false;
   let lastBlockCommentEnd = -1;
 
-  // Scanner le fichier pour trouver les blocs /* */
   for (let i = 0; i < code.length - 1; i++) {
     if (!inBlockComment && code[i] === '/' && code[i + 1] === '*') {
       inBlockComment = true;
@@ -119,16 +99,13 @@ function findInjectionPoint(code: string): number {
     }
   }
 
-  // Si on a trouvé la fin d'un bloc commentaire dans les 5000 premiers caractères, injecter après
   if (lastBlockCommentEnd > 0 && lastBlockCommentEnd < 5000) {
-    // Avancer jusqu'à la prochaine ligne
-    pos = lastBlockCommentEnd;
+    let pos = lastBlockCommentEnd;
     while (pos < code.length && code[pos] !== '\n') pos++;
-    if (pos < code.length) pos++; // passer le \n
+    if (pos < code.length) pos++;
     return pos;
   }
 
-  // Sinon, chercher la fin des commentaires // en début de fichier
   const lines = code.split('\n');
   let linePos = 0;
   for (let i = 0; i < lines.length && i < 50; i++) {
@@ -137,7 +114,6 @@ function findInjectionPoint(code: string): number {
       linePos += lines[i].length + 1;
       continue;
     }
-    // Première ligne qui n'est pas un commentaire //
     return linePos;
   }
 
@@ -145,60 +121,47 @@ function findInjectionPoint(code: string): number {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// GENERATE SECURITY BLOCK (pure ASCII, safe to inject anywhere)
+// GENERATE SECURITY BLOCK — GPC2 32-bit COMPLIANT
+// Règles : define sans #, pas de const int[], pas de float/bool/NULL
 // ══════════════════════════════════════════════════════════════════════
 function generateSecurityBlock(
   buyerName: string,
   licenseKey: string,
   keyInts: number[],
   seeds: number[],
-  watermark: number,
-  hashChain: number[]
+  watermark: number
 ): string {
   const displayName = buyerName.substring(0, 18).toUpperCase();
-  const chainStr = hashChain.slice(0, 8).join(',');
 
-  // Noms de variables aléatoires
-  const v = {
-    a: `_zs${100 + Math.floor(Math.random() * 900)}`,
-    b: `_vc${100 + Math.floor(Math.random() * 900)}`,
-    c: `_qi${100 + Math.floor(Math.random() * 900)}`,
-    d: `_gk${100 + Math.floor(Math.random() * 900)}`,
-    e: `_wm${100 + Math.floor(Math.random() * 900)}`,
-    f: `_tp${100 + Math.floor(Math.random() * 900)}`,
-    g: `_xc${100 + Math.floor(Math.random() * 900)}`,
-    h: `_hb${100 + Math.floor(Math.random() * 900)}`,
-  };
+  // Noms de variables obfusqués uniques
+  const va = `_zs${100 + Math.floor(Math.random() * 900)}`;
+  const vb = `_vc${100 + Math.floor(Math.random() * 900)}`;
+  const vc = `_qi${100 + Math.floor(Math.random() * 900)}`;
+  const vd = `_wm${100 + Math.floor(Math.random() * 900)}`;
 
   return `
 // ================================================================
 // LICENSE PROTECTION SYSTEM - ${SCRIPT_AUTHOR}
 // Licensed to: ${displayName} | Key: ${licenseKey}
 // ================================================================
-#define _LIC_K1  ${keyInts[0] || 0}
-#define _LIC_K2  ${keyInts[1] || 0}
-#define _LIC_K3  ${keyInts[2] || 0}
-#define _LIC_K4  ${keyInts[3] || 0}
-#define _LIC_WM  ${watermark}
-#define _LIC_S1  ${seeds[0]}
-#define _LIC_S2  ${seeds[1]}
-#define _LIC_S3  ${seeds[2]}
-#define _LIC_S4  ${seeds[3]}
-#define _LIC_S5  ${seeds[4]}
-#define _LIC_S6  ${seeds[5]}
-#define _LIC_S7  ${seeds[6]}
-#define _LIC_S8  ${seeds[7]}
+define _LIC_K1 = ${keyInts[0] || 0};
+define _LIC_K2 = ${keyInts[1] || 0};
+define _LIC_K3 = ${keyInts[2] || 0};
+define _LIC_K4 = ${keyInts[3] || 0};
+define _LIC_WM = ${watermark};
+define _LIC_S1 = ${seeds[0]};
+define _LIC_S2 = ${seeds[1]};
+define _LIC_S3 = ${seeds[2]};
+define _LIC_S4 = ${seeds[3]};
+define _LIC_S5 = ${seeds[4]};
+define _LIC_S6 = ${seeds[5]};
+define _LIC_S7 = ${seeds[6]};
+define _LIC_S8 = ${seeds[7]};
 
-int ${v.a} = 0;
-int ${v.b} = 0;
-int ${v.c} = _LIC_S1;
-int ${v.d} = 1;
-int ${v.e} = _LIC_WM;
-int ${v.f} = 0;
-int ${v.g} = 0;
-int ${v.h} = 0;
-
-const int _HC[] = {${chainStr}};
+int ${va} = _LIC_S1;
+int ${vb} = _LIC_WM;
+int ${vc} = _LIC_K1;
+int ${vd} = 0;
 
 `;
 }
@@ -244,19 +207,15 @@ export function generateLicense(
 ): LicenseResult {
   const { name: scriptName, version: scriptVersion } = detectScriptInfo(baseGpcCode);
 
-  // Générer toutes les clés cryptographiques
   const { key: licenseKey } = generateLicenseKey(buyerName, buyerEmail);
   const seeds = generateIntegritySeeds(licenseKey);
   const watermark = generateWatermarkId(buyerName, licenseKey);
-  const hashChain = generateHashChain(licenseKey);
   const keyInts = licenseKeyToInts(licenseKey);
 
-  // Générer le bloc de sécurité (pure ASCII)
   const securityBlock = generateSecurityBlock(
-    buyerName, licenseKey, keyInts, seeds, watermark, hashChain
+    buyerName, licenseKey, keyInts, seeds, watermark
   );
 
-  // Licence header (pure ASCII)
   const displayName = buyerName.substring(0, 52).toUpperCase();
   const header = `// ================================================================
 // ${scriptName} ${scriptVersion} - LICENSED EDITION
@@ -271,22 +230,17 @@ export function generateLicense(
 // ================================================================
 `;
 
-  // Remplacer les anciens noms d'auteurs
   let code = replaceAuthors(baseGpcCode);
 
-  // Trouver le point d'injection sûr (hors commentaires /* */)
   const injectionPoint = findInjectionPoint(code);
 
-  // Assembler : header + code avant injection + security block + reste du code
   const before = code.substring(0, injectionPoint);
   const after = code.substring(injectionPoint);
 
   let protectedCode = header + before + securityBlock + after;
 
-  // Appliquer le watermark de timing
   protectedCode = applyTimingWatermark(protectedCode, watermark);
 
-  // Générer le nom de fichier
   const safeBuyer = buyerName.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 30);
   const safeSlug = scriptSlug.replace(/[^a-zA-Z0-9._-]/g, '_');
   const keySafe = licenseKey.replace(/-/g, '_');
