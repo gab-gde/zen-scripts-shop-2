@@ -62,6 +62,7 @@ export interface User {
   avatar_url?: string;
   points_balance: number;
   is_subscribed: boolean;
+  is_lifetime: boolean;
   subscription_tier: string | null;
   subscription_expires_at: string | null;
   created_at: string;
@@ -309,3 +310,9 @@ export const adminGetStats = async () => {
   const data = await fetchApi<{ stats: any }>('/api/admin/stats');
   return data.stats;
 };
+
+export async function createLifetimeCheckout(): Promise<{ url: string }> {
+  return fetchApi('/api/subscription/create-lifetime', {
+    method: 'POST',
+  });
+}

@@ -228,3 +228,71 @@ export async function sendSupportNotification(
 export const sendSupportNotificationEmail = (data: { email: string; subject: string; message: string }) => {
   return sendSupportNotification(data.email, data.subject, data.message);
 };
+
+// ══════════════════════════════════════════════════════════════════════
+// EMAIL LIFETIME ACCESS CONFIRMATION
+// ══════════════════════════════════════════════════════════════════════
+export async function sendLifetimeConfirmation(
+  customerEmail: string,
+  orderNumber: string
+) {
+  try {
+    await resend.emails.send({
+      from: `Zeus Prenium <${FROM_EMAIL}>`,
+      to: customerEmail,
+      subject: `🏆 Accès à Vie activé — ${orderNumber}`,
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; background: #0a0a12; color: #fff; font-family: sans-serif; border-radius: 16px; overflow: hidden;">
+          <div style="background: linear-gradient(135deg, #1a1200 0%, #0a0a12 100%); padding: 40px 30px; text-align: center; border-bottom: 2px solid #facc15;">
+            <div style="font-size: 48px; margin-bottom: 10px;">🏆</div>
+            <h1 style="color: #facc15; margin: 0; font-size: 28px; font-weight: 900;">ACCÈS À VIE ACTIVÉ</h1>
+            <p style="color: #9ca3af; margin: 10px 0 0 0;">Zeus Prenium — Tous les scripts, pour toujours</p>
+          </div>
+          <div style="padding: 30px;">
+            <div style="background: linear-gradient(135deg, #1a1000 0%, #0a0a12 100%); border: 2px solid #facc15; border-radius: 12px; padding: 25px; margin-bottom: 25px; text-align: center;">
+              <h2 style="color: #facc15; margin: 0 0 10px 0; font-size: 20px;">✅ Merci pour votre confiance !</h2>
+              <p style="color: #9ca3af; font-size: 14px; margin: 0 0 15px 0;">Commande : <strong style="color: #fff;">${orderNumber}</strong></p>
+              <p style="color: #d1d5db; font-size: 15px; margin: 0;">Votre compte dispose maintenant d'un accès illimité à <strong style="color: #facc15;">tous les scripts</strong> actuels et futurs.</p>
+            </div>
+            <div style="background: #16161f; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+              <h3 style="color: #facc15; margin: 0 0 15px 0; font-size: 16px;">Ce que vous obtenez :</h3>
+              <div style="space-y: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                  <span style="color: #facc15; font-size: 16px;">♾️</span>
+                  <span style="color: #d1d5db; font-size: 14px;">Accès à vie à tous les scripts Zeus Prenium</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                  <span style="color: #facc15; font-size: 16px;">🔄</span>
+                  <span style="color: #d1d5db; font-size: 14px;">Mises à jour gratuites à vie sur tous les jeux</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                  <span style="color: #facc15; font-size: 16px;">🎮</span>
+                  <span style="color: #d1d5db; font-size: 14px;">Tous les nouveaux scripts ajoutés automatiquement</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                  <span style="color: #facc15; font-size: 16px;">💎</span>
+                  <span style="color: #d1d5db; font-size: 14px;">+500 points offerts sur votre compte</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="color: #facc15; font-size: 16px;">🛡️</span>
+                  <span style="color: #d1d5db; font-size: 14px;">Support prioritaire VIP à vie</span>
+                </div>
+              </div>
+            </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+              <a href="${process.env.SITE_URL || 'https://zen-scripts-frontend.onrender.com'}/scripts" style="display: inline-block; background: #facc15; color: #000; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
+                🎮 Accéder à mes scripts
+              </a>
+            </div>
+            <p style="color: #6b7280; font-size: 12px; text-align: center; margin: 0;">
+              Zeus Prenium — Merci de faire partie de l'élite 🏆
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    console.log(`[Email] Lifetime confirmation sent to ${customerEmail}`);
+  } catch (error) {
+    console.error('[Email] Erreur envoi lifetime:', error);
+  }
+}

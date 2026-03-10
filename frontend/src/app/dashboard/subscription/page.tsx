@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { getSubscriptionStatus, cancelSubscription, reactivateSubscription, createSubscription } from '@/lib/api';
 import { useAuth } from '@/components/AuthProvider';
+import Link from 'next/link';
 
 function SubscriptionContent() {
   const { user, refreshUser } = useAuth();
@@ -14,7 +15,7 @@ function SubscriptionContent() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const success = searchParams.get('success');
+  const success = searchParams.get('success') || searchParams.get('lifetime');
   const cancelled = searchParams.get('cancelled');
 
   useEffect(() => {
@@ -70,6 +71,35 @@ function SubscriptionContent() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="w-12 h-12 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // ── LIFETIME ──
+  if (user?.is_lifetime) {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold mb-6">Mon abonnement</h1>
+        {success && (
+          <div className="mb-6 bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-green-400">
+            🏆 Accès à vie activé ! Bienvenue dans l&apos;élite Zeus Prenium.
+          </div>
+        )}
+        <div className="bg-gradient-to-br from-yellow-500/15 via-amber-500/10 to-yellow-900/10 rounded-2xl border-2 border-yellow-400/50 p-8 mb-8 text-center">
+          <div className="text-6xl mb-4">🏆</div>
+          <h2 className="text-2xl font-black mb-2">
+            Accès <span className="text-yellow-400">À Vie</span> Actif
+          </h2>
+          <p className="text-gray-400 mb-6">Vous avez accès à tous les scripts actuels et futurs, pour toujours.</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6 text-sm">
+            {['♾️ Tous les scripts', '🔄 Mises à jour à vie', '🎮 Nouveaux scripts auto', '💎 Support VIP à vie', '🔐 Builds chiffrés', '+500 pts offerts'].map((f, i) => (
+              <div key={i} className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-yellow-200">{f}</div>
+            ))}
+          </div>
+          <Link href="/scripts" className="btn-zeus px-8 py-3 rounded-xl inline-block">
+            Accéder à mes scripts →
+          </Link>
+        </div>
       </div>
     );
   }

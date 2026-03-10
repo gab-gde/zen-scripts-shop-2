@@ -120,8 +120,68 @@ router.post('/create', async (req: Request, res: Response) => {
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// POST /api/subscription/cancel
+// POST /api/subscription/create-lifetime - Accès à vie (paiement unique)
 // ══════════════════════════════════════════════════════════════════════
+router.post('/create-lifetime', async (req: Request, res: Response) => {
+  try {
+    const { data: user } = await supabase
+      .from('users')
+      .select('stripe_customer_id, email, username, is_lifetime')
+      .eq('id', req.user!.userId)
+      .single();
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    if (user.is_lifetime) {
+      return res.status(400).json({ success: false, error: 'Vous avez déjà un accès à vie' });
+    }
+
+    let customerId = user.stripe_customer_id;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { user_id: req.user!.userId, username: user.username },
+      });
+      customerId = customer.id;
+      await supabase.from('users').update({ stripe_customer_id: customerId }).eq('id', req.user!.userId);
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: 'Zeus Prenium — Accès à Vie',
+              description: 'Accès illimité à tous les scripts actuels et futurs, à vie.',
+            },
+            unit_amount: 19999, // 199.99€
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        user_id: req.user!.userId,
+        purchase_type: 'lifetime',
+      },
+      success_url: `${config.siteUrl}/dashboard/subscription?lifetime=true`,
+      cancel_url: `${config.siteUrl}/subscription`,
+    });
+
+    return res.json({ success: true, url: session.url });
+  } catch (error: any) {
+    console.error('[Lifetime] Create error:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+
 router.post('/cancel', async (req: Request, res: Response) => {
   try {
     const { data: user } = await supabase

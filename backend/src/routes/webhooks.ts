@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { config } from '../lib/config';
 import { generateLicense } from '../services/license-generator';
 import { getBaseScript, storeBuild, getDownloadUrl, getSecurityPdfBase64 } from '../services/storage';
-import { sendOrderConfirmationWithBuild, sendAdminNotification } from '../services/email';
+import { sendOrderConfirmationWithBuild, sendAdminNotification, sendLifetimeConfirmation } from '../services/email';
 import { awardPoints } from '../services/points';
 import { markRewardCodeUsed } from '../services/points';
 
@@ -34,9 +34,10 @@ router.post('/stripe', async (req: Request, res: Response) => {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any;
 
-    // Check if this is a subscription checkout
     if (session.mode === 'subscription') {
       await handleSubscriptionCreated(session);
+    } else if (session.metadata?.purchase_type === 'lifetime') {
+      await handleLifetimePurchase(session);
     } else {
       await handleScriptPurchase(session);
     }
@@ -62,6 +63,80 @@ router.post('/stripe', async (req: Request, res: Response) => {
 
   res.json({ received: true });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// HANDLE LIFETIME PURCHASE
+// ══════════════════════════════════════════════════════════════════════
+async function handleLifetimePurchase(session: any) {
+  try {
+    const userId = session.metadata?.user_id;
+    const customerEmail = session.customer_details?.email || session.customer_email;
+    const amountTotal = session.amount_total;
+    const orderNumber = `ZS-LT-${Date.now().toString(36).toUpperCase()}`;
+
+    console.log(`[Lifetime] New purchase: ${orderNumber} | ${customerEmail} | User: ${userId}`);
+
+    // 1. Marquer l'utilisateur comme lifetime
+    await supabase.from('users').update({
+      is_lifetime: true,
+    }).eq('id', userId);
+
+    // 2. Créer la commande
+    const { data: order } = await supabase.from('orders').insert({
+      order_number: orderNumber,
+      email: customerEmail,
+      script_id: null,
+      amount_cents: amountTotal,
+      currency: 'EUR',
+      stripe_session_id: session.id,
+      payment_status: 'paid',
+      buyer_pseudo: customerEmail?.split('@')[0] || 'Client',
+      user_id: userId,
+      notes: 'LIFETIME_ACCESS',
+    }).select().single();
+
+    // 3. Récupérer tous les scripts actifs et les ajouter à user_scripts
+    const { data: scripts } = await supabase
+      .from('scripts')
+      .select('id')
+      .eq('is_active', true);
+
+    if (scripts && userId) {
+      const upserts = scripts.map((s: any) => ({
+        user_id: userId,
+        script_id: s.id,
+        order_id: order?.id || null,
+        license_key: null,
+      }));
+      await supabase.from('user_scripts').upsert(upserts, { onConflict: 'user_id,script_id' });
+    }
+
+    // 4. Log subscription event
+    await supabase.from('subscription_events').insert({
+      user_id: userId,
+      event_type: 'lifetime',
+      tier: 'lifetime',
+      stripe_event_id: session.id,
+    });
+
+    // 5. Points bonus
+    await awardPoints(userId, 500, 'lifetime_bonus', 'Bonus accès à vie Zeus Prenium (+500 pts)');
+
+    // 6. Email de confirmation
+    await sendLifetimeConfirmation(customerEmail, orderNumber);
+
+    // 7. Admin notification
+    await sendAdminNotification(
+      orderNumber, 'ACCÈS À VIE — Zeus Prenium', customerEmail,
+      '199.99 €', customerEmail?.split('@')[0] || 'Client',
+      'LIFETIME', false
+    );
+
+    console.log(`[Lifetime] ✅ ${orderNumber} completed for user ${userId}`);
+  } catch (err) {
+    console.error('[Lifetime] Error:', err);
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // HANDLE SCRIPT PURCHASE

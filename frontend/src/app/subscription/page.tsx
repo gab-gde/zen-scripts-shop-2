@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
-import { createSubscription } from '@/lib/api';
+import { createSubscription, createLifetimeCheckout } from '@/lib/api';
 
 const plans = [
   {
@@ -42,19 +42,24 @@ export default function SubscriptionPublicPage() {
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleSubscribe(tier: 'pro' | 'elite') {
-    if (!user) {
-      window.location.href = '/register';
-      return;
-    }
-
-    if (user.is_subscribed) {
-      window.location.href = '/dashboard/subscription';
-      return;
-    }
-
+    if (!user) { window.location.href = '/register'; return; }
+    if (user.is_subscribed) { window.location.href = '/dashboard/subscription'; return; }
     setLoading(tier);
     try {
       const { url } = await createSubscription(tier);
+      if (url) window.location.href = url;
+    } catch (err: any) {
+      alert(err.message || 'Erreur');
+      setLoading(null);
+    }
+  }
+
+  async function handleLifetime() {
+    if (!user) { window.location.href = '/register'; return; }
+    if (user.is_lifetime) { window.location.href = '/dashboard/subscription'; return; }
+    setLoading('lifetime');
+    try {
+      const { url } = await createLifetimeCheckout();
       if (url) window.location.href = url;
     } catch (err: any) {
       alert(err.message || 'Erreur');
@@ -74,8 +79,79 @@ export default function SubscriptionPublicPage() {
             Ne ratez plus jamais une <span className="text-yellow-400">mise à jour</span>
           </h1>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Recevez automatiquement vos scripts mis à jour avec un nouveau build chiffré à chaque patch de jeu. Plus de points bonus chaque mois.
+            Recevez automatiquement vos scripts mis à jour avec un nouveau build chiffré à chaque patch de jeu.
           </p>
+        </div>
+
+        {/* ── LIFETIME BANNER ── */}
+        <div className="relative rounded-2xl p-8 mb-10 bg-gradient-to-br from-yellow-500/15 via-amber-500/10 to-yellow-900/10 border-2 border-yellow-400/50 overflow-hidden">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-transparent pointer-events-none" />
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+            <span className="bg-gradient-to-r from-yellow-400 to-amber-500 text-black text-xs font-black px-6 py-1.5 rounded-full tracking-wider shadow-lg">
+              🏆 OFFRE EXCLUSIVE — ACCÈS À VIE
+            </span>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center gap-8 mt-4">
+            {/* Left: price & description */}
+            <div className="text-center md:text-left flex-1">
+              <h2 className="text-3xl font-black mb-1">Zeus Prenium <span className="text-yellow-400">Lifetime</span></h2>
+              <p className="text-gray-400 mb-4">Un seul paiement. Tous les scripts. Pour toujours.</p>
+              <div className="flex items-baseline gap-2 justify-center md:justify-start mb-2">
+                <span className="text-6xl font-black text-yellow-400">199</span>
+                <div>
+                  <span className="text-2xl text-yellow-400">.99€</span>
+                  <p className="text-gray-500 text-xs">paiement unique</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">vs. 300€+ si acheté à l&apos;unité</p>
+            </div>
+
+            {/* Right: features */}
+            <div className="flex-1">
+              <ul className="space-y-3 mb-6">
+                {[
+                  { icon: '♾️', text: 'Accès à vie à tous les scripts actuels' },
+                  { icon: '🎮', text: 'Tous les nouveaux scripts ajoutés automatiquement' },
+                  { icon: '🔄', text: 'Mises à jour gratuites à vie' },
+                  { icon: '💎', text: '+500 points offerts immédiatement' },
+                  { icon: '🛡️', text: 'Support VIP à vie' },
+                  { icon: '🔐', text: 'Build chiffré unique à votre nom pour chaque script' },
+                ].map((f, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm">
+                    <span className="text-lg">{f.icon}</span>
+                    <span className="text-gray-200">{f.text}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={handleLifetime}
+                disabled={loading === 'lifetime' || user?.is_lifetime}
+                className="w-full py-4 rounded-xl font-black text-lg text-black bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 transition-all disabled:opacity-50 shadow-lg shadow-yellow-500/20"
+              >
+                {loading === 'lifetime'
+                  ? 'Redirection...'
+                  : user?.is_lifetime
+                  ? '✅ Accès à vie actif'
+                  : user
+                  ? '🏆 Obtenir l\'accès à vie — 199.99€'
+                  : 'Créer un compte pour acheter'}
+              </button>
+              {!user && (
+                <p className="text-center text-xs text-gray-500 mt-2">
+                  <Link href="/register" className="text-yellow-400 hover:underline">Créer un compte</Link> ou{' '}
+                  <Link href="/login" className="text-yellow-400 hover:underline">se connecter</Link> pour acheter
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── MONTHLY PLANS ── */}
+        <div className="text-center mb-8">
+          <p className="text-gray-400 text-sm">Ou choisissez un abonnement mensuel</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-16">
@@ -95,7 +171,6 @@ export default function SubscriptionPublicPage() {
                   </span>
                 </div>
               )}
-
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold mb-1">{plan.name}</h2>
                 <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
@@ -104,7 +179,6 @@ export default function SubscriptionPublicPage() {
                   <span className="text-gray-400">€ / mois</span>
                 </div>
               </div>
-
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm">
@@ -113,7 +187,6 @@ export default function SubscriptionPublicPage() {
                   </li>
                 ))}
               </ul>
-
               <button
                 onClick={() => handleSubscribe(plan.tier)}
                 disabled={loading === plan.tier}
@@ -142,41 +215,26 @@ export default function SubscriptionPublicPage() {
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl border border-yellow-500/20">
-                🔔
-              </div>
+              <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl border border-yellow-500/20">🔔</div>
               <h3 className="font-bold mb-2">1. Un jeu est mis à jour</h3>
-              <p className="text-sm text-gray-400">
-                Dès qu&apos;un patch sort, nous mettons à jour le script et vous êtes notifié instantanément.
-              </p>
+              <p className="text-sm text-gray-400">Dès qu&apos;un patch sort, nous mettons à jour le script et vous êtes notifié instantanément.</p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl border border-yellow-500/20">
-                🔐
-              </div>
+              <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl border border-yellow-500/20">🔐</div>
               <h3 className="font-bold mb-2">2. Nouveau build chiffré</h3>
-              <p className="text-sm text-gray-400">
-                Un nouveau build unique est généré automatiquement avec votre pseudo, clé de licence et watermarks.
-              </p>
+              <p className="text-sm text-gray-400">Un nouveau build unique est généré automatiquement avec votre pseudo, clé de licence et watermarks.</p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl border border-yellow-500/20">
-                📧
-              </div>
+              <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl border border-yellow-500/20">📧</div>
               <h3 className="font-bold mb-2">3. Livré par email</h3>
-              <p className="text-sm text-gray-400">
-                Vous recevez le fichier .gpc directement par email. Il ne reste plus qu&apos;à flasher !
-              </p>
+              <p className="text-sm text-gray-400">Vous recevez le fichier .gpc directement par email. Il ne reste plus qu&apos;à flasher !</p>
             </div>
           </div>
         </div>
 
-        {/* FAQ */}
         <div className="text-center">
           <p className="text-gray-400 mb-4">Des questions sur l&apos;abonnement ?</p>
-          <Link href="/faq" className="text-yellow-400 hover:underline">
-            Consulter la FAQ →
-          </Link>
+          <Link href="/faq" className="text-yellow-400 hover:underline">Consulter la FAQ →</Link>
         </div>
       </div>
     </div>
