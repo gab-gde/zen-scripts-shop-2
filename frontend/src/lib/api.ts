@@ -316,3 +316,7 @@ export async function createLifetimeCheckout(): Promise<{ url: string }> {
     method: 'POST',
   });
 }
+
+export async function downloadScript(scriptId: string): Promise<{ downloadUrl: string; filename: string }> {
+  return fetchApi(`/api/user/scripts/${scriptId}/download`);
+}

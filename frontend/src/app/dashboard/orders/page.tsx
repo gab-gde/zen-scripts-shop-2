@@ -2,13 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getUserOrders, getUserScripts, Order } from '@/lib/api';
+import { getUserOrders, getUserScripts, Order, downloadScript } from '@/lib/api';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [userScripts, setUserScripts] = useState<any[]>([]);
   const [tab, setTab] = useState<'scripts' | 'orders'>('scripts');
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState<string | null>(null);
+
+  async function handleDownload(scriptId: string, scriptName: string) {
+    setDownloading(scriptId);
+    try {
+      const { downloadUrl, filename } = await downloadScript(scriptId);
+      // Déclencher le téléchargement
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = filename || `${scriptName}.gpc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err: any) {
+      alert(err.message || 'Erreur lors du téléchargement');
+    }
+    setDownloading(null);
+  }
 
   useEffect(() => {
     async function load() {
@@ -90,13 +108,26 @@ export default function OrdersPage() {
                       )}
                     </div>
                   </div>
-                  <div className="px-4 py-3 bg-primary-light border-t border-surface-border flex items-center justify-between">
+                  <div className="px-4 py-3 bg-primary-light border-t border-surface-border flex items-center justify-between gap-2">
                     <span className="text-xs text-gray-500">
                       Acquis le {new Date(us.created_at).toLocaleDateString('fr-FR')}
                     </span>
-                    <Link href={`/scripts/${us.scripts?.slug}`} className="text-xs text-yellow-400 hover:underline">
-                      Voir la page →
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleDownload(us.scripts?.id, us.scripts?.name)}
+                        disabled={downloading === us.scripts?.id}
+                        className="text-xs bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
+                      >
+                        {downloading === us.scripts?.id ? (
+                          <>⏳ Génération...</>
+                        ) : (
+                          <>⬇️ Télécharger</>
+                        )}
+                      </button>
+                      <Link href={`/scripts/${us.scripts?.slug}`} className="text-xs text-yellow-400 hover:underline">
+                        Voir →
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}

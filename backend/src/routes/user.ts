@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { supabase } from '../lib/supabase';
 import { requireUser } from '../middleware/user-auth';
+import { generateLicense } from '../services/license-generator';
+import { getBaseScript, storeBuild, getDownloadUrl } from '../services/storage';
 
 const router = Router();
 
@@ -187,6 +189,106 @@ router.put('/notifications/:id/read', async (req: Request, res: Response) => {
 
     return res.json({ success: true });
   } catch (error) {
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// GET /api/user/scripts/:scriptId/download - Télécharger un build
+// ══════════════════════════════════════════════════════════════════════
+router.get('/scripts/:scriptId/download', async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const { scriptId } = req.params;
+
+    // Vérifier que l'user possède ce script
+    const { data: userScript, error: usError } = await supabase
+      .from('user_scripts')
+      .select('*, scripts(id, name, slug, short_description)')
+      .eq('user_id', userId)
+      .eq('script_id', scriptId)
+      .single();
+
+    if (usError || !userScript) {
+      return res.status(403).json({ success: false, error: 'Script non possédé' });
+    }
+
+    const script = userScript.scripts as any;
+    const scriptSlug = script.slug;
+    const scriptName = script.name;
+
+    // Récupérer les infos user
+    const { data: userData } = await supabase
+      .from('users')
+      .select('email, username')
+      .eq('id', userId)
+      .single();
+
+    const pseudo = userData?.username || userData?.email?.split('@')[0] || 'Client';
+    const email = userData?.email || '';
+
+    // Chercher un build existant pour cet user + script
+    const { data: existingBuild } = await supabase
+      .from('builds')
+      .select('storage_path, filename, license_key')
+      .eq('buyer_email', email)
+      .eq('script_id', scriptId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    let downloadUrl: string | null = null;
+
+    if (existingBuild?.storage_path) {
+      // Regénérer un lien frais (signed URL)
+      downloadUrl = await getDownloadUrl(existingBuild.storage_path);
+    }
+
+    if (!downloadUrl) {
+      // Générer un nouveau build
+      console.log(`[Download] Generating build for ${pseudo} | ${scriptSlug}`);
+      const baseCode = await getBaseScript(scriptSlug);
+
+      if (!baseCode) {
+        return res.status(404).json({ success: false, error: 'Fichier source introuvable dans le bucket. Contactez le support.' });
+      }
+
+      const result = generateLicense(baseCode, pseudo, email, scriptSlug);
+      const orderId = userScript.order_id || userId;
+      const storagePath = await storeBuild(result.filename, result.protectedCode, orderId);
+
+      if (!storagePath) {
+        return res.status(500).json({ success: false, error: 'Erreur lors de la génération du fichier' });
+      }
+
+      downloadUrl = await getDownloadUrl(storagePath);
+
+      // Sauvegarder en DB
+      await supabase.from('builds').insert({
+        order_id: userScript.order_id || null,
+        script_id: scriptId,
+        buyer_pseudo: pseudo,
+        buyer_email: email,
+        license_key: result.licenseKey,
+        watermark: result.watermark,
+        filename: result.filename,
+        storage_path: storagePath,
+        script_name: scriptName,
+      });
+
+      // Mettre à jour license_key dans user_scripts
+      await supabase
+        .from('user_scripts')
+        .update({ license_key: result.licenseKey })
+        .eq('user_id', userId)
+        .eq('script_id', scriptId);
+
+      console.log(`[Download] ✅ Build généré: ${result.filename}`);
+    }
+
+    return res.json({ success: true, downloadUrl, filename: existingBuild?.filename || `ZEUS_PRENIUM_${scriptSlug.toUpperCase()}.gpc` });
+  } catch (error) {
+    console.error('[Download] Error:', error);
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
