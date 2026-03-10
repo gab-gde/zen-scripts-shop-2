@@ -6,7 +6,6 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { getSubscriptionStatus, cancelSubscription, reactivateSubscription, createSubscription } from '@/lib/api';
 import { useAuth } from '@/components/AuthProvider';
-import Link from 'next/link';
 
 function SubscriptionContent() {
   const { user, refreshUser } = useAuth();
