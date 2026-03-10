@@ -85,7 +85,7 @@ router.post('/register', async (req: Request, res: Response) => {
         username: username.toLowerCase(),
         points_balance: config.points.welcomeBonus,
       })
-      .select('id, email, username, points_balance, is_subscribed, subscription_tier, created_at')
+      .select('id, email, username, points_balance, is_subscribed, is_lifetime, subscription_tier, created_at')
       .single();
 
     if (insertError || !user) {
@@ -117,6 +117,7 @@ router.post('/register', async (req: Request, res: Response) => {
         username: user.username,
         points_balance: user.points_balance,
         is_subscribed: user.is_subscribed,
+        is_lifetime: user.is_lifetime || false,
         subscription_tier: user.subscription_tier,
         created_at: user.created_at,
       },
@@ -180,6 +181,7 @@ router.post('/login', async (req: Request, res: Response) => {
         username: user.username,
         points_balance: user.points_balance,
         is_subscribed: user.is_subscribed,
+        is_lifetime: user.is_lifetime || false,
         subscription_tier: user.subscription_tier,
         avatar_url: user.avatar_url,
         created_at: user.created_at,
@@ -211,7 +213,7 @@ router.get('/me', requireUser, async (req: Request, res: Response) => {
   try {
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, email, username, avatar_url, points_balance, is_subscribed, subscription_tier, subscription_expires_at, created_at')
+      .select('id, email, username, avatar_url, points_balance, is_subscribed, is_lifetime, subscription_tier, subscription_expires_at, created_at')
       .eq('id', req.user!.userId)
       .single();
 
@@ -259,7 +261,7 @@ router.put('/profile', requireUser, async (req: Request, res: Response) => {
       .from('users')
       .update(updates)
       .eq('id', req.user!.userId)
-      .select('id, email, username, avatar_url, points_balance, is_subscribed, subscription_tier, created_at')
+      .select('id, email, username, avatar_url, points_balance, is_subscribed, is_lifetime, subscription_tier, created_at')
       .single();
 
     if (error) {

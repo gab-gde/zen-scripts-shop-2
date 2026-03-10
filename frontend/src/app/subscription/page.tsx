@@ -84,7 +84,7 @@ export default function SubscriptionPublicPage() {
         </div>
 
         {/* ── LIFETIME BANNER ── */}
-        <div className="relative rounded-2xl p-8 mb-10 bg-gradient-to-br from-yellow-500/15 via-amber-500/10 to-yellow-900/10 border-2 border-yellow-400/50 overflow-hidden">
+        <div className="relative rounded-2xl p-8 mb-10 bg-gradient-to-br from-yellow-500/15 via-amber-500/10 to-yellow-900/10 border-2 border-yellow-400/50">
           {/* Glow effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-transparent pointer-events-none" />
           <div className="absolute -top-4 left-1/2 -translate-x-1/2">
