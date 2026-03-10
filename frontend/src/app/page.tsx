@@ -13,6 +13,8 @@ const games = [
   { name: 'Rust', image: '/images/rust.jpg', available: true },
   { name: 'ARC Raiders', image: '/images/arcraiders.jpg', available: true },
   { name: 'Warzone', image: '/images/warzone.jpg', available: true },
+  { name: 'Battlefield 6', image: '/images/bf6.jpg', available: true },
+  { name: 'Apex Legends S28', image: '/images/apex.jpg', available: true },
 ];
 
 export default function HomePage() {
