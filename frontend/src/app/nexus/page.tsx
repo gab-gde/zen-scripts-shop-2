@@ -44,20 +44,26 @@ const features = [
 const tiers = [
   {
     name: 'Standard',
+    key: 'standard',
     color: 'cyan',
+    price: '0,50',
     features: ['Aimbot basique', 'ESP Boxes', 'No Recoil', 'HUD Overlays'],
     locked: ['Silent Aim', 'Chams', 'Radar Hack'],
   },
   {
     name: 'Pro',
+    key: 'pro',
     color: 'yellow',
+    price: '1,00',
     features: ['Tout Standard +', 'Silent Aim', 'Chams complets', 'World ESP', 'Radar Hack', 'Support prioritaire'],
     locked: [],
   },
   {
     name: 'Lifetime',
+    key: 'lifetime',
     color: 'red',
     badge: true,
+    price: '2,00',
     features: ['Accès complet permanent', 'Toutes les features', 'Mises à jour à vie', 'Support VIP', 'Accès anticipé', 'Configs prédéfinies'],
     locked: [],
   },
@@ -72,27 +78,28 @@ const steps = [
 
 export default function NexusPage() {
   const [tab, setTab] = useState(0);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-  async function handleCheckout() {
-    setCheckoutLoading(true);
+  async function handleCheckout(tier: string = 'lifetime') {
+    setCheckoutLoading(tier);
     try {
       const res = await fetch(`${API_URL}/api/nexus/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
       });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       } else {
         alert('Erreur lors de la création du checkout.');
-        setCheckoutLoading(false);
+        setCheckoutLoading(null);
       }
     } catch {
       alert('Erreur réseau. Réessayez.');
-      setCheckoutLoading(false);
+      setCheckoutLoading(null);
     }
   }
 
@@ -111,24 +118,24 @@ export default function NexusPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
             </span>
-            <span className="text-sm text-gray-400 tracking-wide font-mono">UNDETECTED · EXTERNAL · GRATUIT</span>
+            <span className="text-sm text-gray-400 tracking-wide font-mono">UNDETECTED · EXTERNAL · DÈS 0,50€</span>
           </div>
 
           <h1 className="text-6xl md:text-8xl font-black mb-3 tracking-tight text-red-500">NEXUS</h1>
           <p className="font-mono text-gray-500 tracking-widest text-sm mb-3">v4.2.1 — WARZONE CHEAT SUITE</p>
           <p className="text-gray-400 text-lg max-w-xl mx-auto mb-10">
             Suite complète pour Call of Duty: Warzone. Aimbot, ESP, No Recoil et plus.
-            <span className="text-yellow-400 font-semibold"> Offert gratuitement</span> à tous les clients Zeus Prenium.
+            <span className="text-yellow-400 font-semibold"> Disponible dès 0,50€</span> pour les clients Zeus Prenium.
           </p>
 
           {/* Download buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
             <button
-              onClick={handleCheckout}
-              disabled={checkoutLoading}
+              onClick={() => handleCheckout('lifetime')}
+              disabled={!!checkoutLoading}
               className="group inline-flex items-center gap-3 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-wait text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,62,62,0.3)] hover:scale-105"
             >
-              {checkoutLoading ? (
+              {checkoutLoading === 'lifetime' ? (
                 <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -138,8 +145,8 @@ export default function NexusPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               )}
-              {checkoutLoading ? 'Redirection...' : 'Obtenir NEXUS — Gratuit'}
-              <span className="text-red-200 text-sm font-normal">0,00 €</span>
+              {checkoutLoading === 'lifetime' ? 'Redirection...' : 'Obtenir NEXUS Lifetime'}
+              <span className="text-red-200 text-sm font-normal">2,00 €</span>
             </button>
             <a
               href="/downloads/NEXUS_Documentation.pdf"
@@ -201,7 +208,7 @@ export default function NexusPage() {
           <h2 className="text-3xl font-bold text-center mb-2">
             <span className="text-gradient">Niveaux de licence</span>
           </h2>
-          <p className="text-gray-500 text-center mb-12">Votre clé vous est fournie par message après demande.</p>
+          <p className="text-gray-500 text-center mb-12">Choisissez votre licence. Votre clé est fournie après achat.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {tiers.map((t) => {
@@ -228,10 +235,9 @@ export default function NexusPage() {
                     </span>
                   </div>
                   <div className="mb-5">
-                    <span className="text-2xl font-black text-white">GRATUIT</span>
-                    <span className="text-gray-500 text-xs ml-2">pour les clients Zeus</span>
+                    <span className="text-2xl font-black text-white">{t.price} €</span>
                   </div>
-                  <div className="space-y-2.5">
+                  <div className="space-y-2.5 mb-6">
                     {t.features.map((f) => (
                       <div key={f} className="flex items-start gap-2">
                         <span className="text-green-400 text-xs mt-0.5">✓</span>
@@ -245,6 +251,19 @@ export default function NexusPage() {
                       </div>
                     ))}
                   </div>
+                  <button
+                    onClick={() => handleCheckout(t.key)}
+                    disabled={!!checkoutLoading}
+                    className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all ${
+                      t.color === 'red'
+                        ? 'bg-red-500 hover:bg-red-600 text-white hover:shadow-[0_0_20px_rgba(255,62,62,0.3)]'
+                        : t.color === 'yellow'
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-primary hover:shadow-[0_0_20px_rgba(250,204,21,0.3)]'
+                        : 'bg-surface-light border border-surface-border hover:border-cyan-500/40 text-gray-300 hover:text-white'
+                    } disabled:opacity-40 disabled:cursor-wait`}
+                  >
+                    {checkoutLoading === t.key ? 'Redirection...' : `Obtenir ${t.name}`}
+                  </button>
                 </div>
               );
             })}
