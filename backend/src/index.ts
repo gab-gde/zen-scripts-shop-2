@@ -11,6 +11,7 @@ import adminBuildsRoutes from './routes/admin-builds';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import subscriptionRoutes from './routes/subscription';
+import nexusRoutes from './routes/nexus';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/scripts', scriptsRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/builds', adminBuildsRoutes);
+app.use('/api/nexus', nexusRoutes);
 
 // 404
 app.use((req: Request, res: Response) => {

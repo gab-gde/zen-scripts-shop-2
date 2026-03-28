@@ -72,6 +72,29 @@ const steps = [
 
 export default function NexusPage() {
   const [tab, setTab] = useState(0);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  async function handleCheckout() {
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/nexus/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Erreur lors de la création du checkout.');
+        setCheckoutLoading(false);
+      }
+    } catch {
+      alert('Erreur réseau. Réessayez.');
+      setCheckoutLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -100,16 +123,24 @@ export default function NexusPage() {
 
           {/* Download buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-            <a
-              href="https://github.com/gab-gde/zen-scripts-shop-2/releases/download/nexus-v4.2.1/NEXUS.exe"
-              className="group inline-flex items-center gap-3 bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,62,62,0.3)] hover:scale-105"
+            <button
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+              className="group inline-flex items-center gap-3 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-wait text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,62,62,0.3)] hover:scale-105"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Télécharger NEXUS.exe
-              <span className="text-red-200 text-sm font-normal">(~60 Mo)</span>
-            </a>
+              {checkoutLoading ? (
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              )}
+              {checkoutLoading ? 'Redirection...' : 'Obtenir NEXUS — Gratuit'}
+              <span className="text-red-200 text-sm font-normal">0,00 €</span>
+            </button>
             <a
               href="/downloads/NEXUS_Documentation.pdf"
               className="inline-flex items-center gap-3 bg-surface border border-surface-border hover:border-yellow-500/40 text-gray-300 hover:text-white font-medium px-8 py-4 rounded-xl transition-all duration-300"
@@ -120,7 +151,7 @@ export default function NexusPage() {
               Documentation PDF
             </a>
           </div>
-          <p className="text-xs text-gray-600 font-mono">Windows 10/11 · Portable · Licence fournie sur demande</p>
+          <p className="text-xs text-gray-600 font-mono">Windows 10/11 · Portable · Licence fournie après checkout</p>
         </div>
       </section>
 
