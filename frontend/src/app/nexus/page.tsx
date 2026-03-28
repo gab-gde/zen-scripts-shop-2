@@ -63,7 +63,7 @@ const tiers = [
     key: 'lifetime',
     color: 'red',
     badge: true,
-    price: '250',
+    price: '225',
     features: ['Accès complet permanent', 'Toutes les features', 'Mises à jour à vie', 'Support VIP', 'Accès anticipé', 'Configs prédéfinies'],
     locked: [],
   },
@@ -146,7 +146,7 @@ export default function NexusPage() {
                 </svg>
               )}
               {checkoutLoading === 'lifetime' ? 'Redirection...' : 'Obtenir NEXUS Lifetime'}
-              <span className="text-red-200 text-sm font-normal">200 €</span>
+              <span className="text-red-200 text-sm font-normal">225 €</span>
             </button>
             <a
               href="/downloads/NEXUS_Documentation.pdf"
