@@ -7,9 +7,9 @@ const router = Router();
 
 // ── Tiers pricing (in cents) ──
 const TIERS: Record<string, { name: string; price: number; label: string }> = {
-  standard: { name: 'NEXUS Standard', price: 7500, label: 'Standard' },
-  pro:      { name: 'NEXUS Pro',      price: 12500, label: 'Pro' },
-  lifetime: { name: 'NEXUS Lifetime', price: 20000, label: 'Lifetime' },
+  standard: { name: 'NEXUS Standard', price: 12500, label: 'Standard' },
+  pro:      { name: 'NEXUS Pro',      price: 17500, label: 'Pro' },
+  lifetime: { name: 'NEXUS Lifetime', price: 22500, label: 'Lifetime' },
 };
 
 // POST /api/nexus/checkout
