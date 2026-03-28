@@ -46,7 +46,7 @@ const tiers = [
     name: 'Standard',
     key: 'standard',
     color: 'cyan',
-    price: '0,50',
+    price: '125',
     features: ['Aimbot basique', 'ESP Boxes', 'No Recoil', 'HUD Overlays'],
     locked: ['Silent Aim', 'Chams', 'Radar Hack'],
   },
@@ -54,7 +54,7 @@ const tiers = [
     name: 'Pro',
     key: 'pro',
     color: 'yellow',
-    price: '1,00',
+    price: '175',
     features: ['Tout Standard +', 'Silent Aim', 'Chams complets', 'World ESP', 'Radar Hack', 'Support prioritaire'],
     locked: [],
   },
@@ -63,7 +63,7 @@ const tiers = [
     key: 'lifetime',
     color: 'red',
     badge: true,
-    price: '2,00',
+    price: '250',
     features: ['Accès complet permanent', 'Toutes les features', 'Mises à jour à vie', 'Support VIP', 'Accès anticipé', 'Configs prédéfinies'],
     locked: [],
   },
@@ -118,14 +118,14 @@ export default function NexusPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
             </span>
-            <span className="text-sm text-gray-400 tracking-wide font-mono">UNDETECTED · EXTERNAL · DÈS 0,50€</span>
+            <span className="text-sm text-gray-400 tracking-wide font-mono">UNDETECTED · EXTERNAL </span>
           </div>
 
           <h1 className="text-6xl md:text-8xl font-black mb-3 tracking-tight text-red-500">NEXUS</h1>
-          <p className="font-mono text-gray-500 tracking-widest text-sm mb-3">v4.2.1 — WARZONE CHEAT SUITE</p>
+          <p className="font-mono text-gray-500 tracking-widest text-sm mb-3">v4.2.1 — WARZONE CHEAT </p>
           <p className="text-gray-400 text-lg max-w-xl mx-auto mb-10">
-            Suite complète pour Call of Duty: Warzone. Aimbot, ESP, No Recoil et plus.
-            <span className="text-yellow-400 font-semibold"> Disponible dès 0,50€</span> pour les clients Zeus Prenium.
+            Cheat complet pour Call of Duty: Warzone. Aimbot, ESP, No Recoil et plus.
+            <span className="text-yellow-400 font-semibold"> Disponible dès 125€</span> pour les clients Zeus Prenium.
           </p>
 
           {/* Download buttons */}
@@ -146,7 +146,7 @@ export default function NexusPage() {
                 </svg>
               )}
               {checkoutLoading === 'lifetime' ? 'Redirection...' : 'Obtenir NEXUS Lifetime'}
-              <span className="text-red-200 text-sm font-normal">2,00 €</span>
+              <span className="text-red-200 text-sm font-normal">200 €</span>
             </button>
             <a
               href="/downloads/NEXUS_Documentation.pdf"
@@ -300,7 +300,6 @@ export default function NexusPage() {
       <section className="py-10 border-t border-surface-border">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <p className="text-gray-600 text-[10px] font-mono leading-relaxed">
-            NEXUS est fourni gratuitement aux clients Zeus Prenium à des fins de divertissement uniquement.
             Zeus Prenium n'est pas responsable de l'utilisation faite de ce logiciel.
             En téléchargeant, vous acceptez de l'utiliser sous votre propre responsabilité.
           </p>
