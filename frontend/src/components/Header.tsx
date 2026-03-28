@@ -35,6 +35,7 @@ export default function Header() {
           <Link href="/subscription" className="text-gray-400 hover:text-white transition-colors text-sm">Abonnement</Link>
           <Link href="/faq" className="text-gray-400 hover:text-white transition-colors text-sm">FAQ</Link>
           <Link href="/support" className="text-gray-400 hover:text-white transition-colors text-sm">Support</Link>
+          <Link href="/nexus" className="text-red-400 hover:text-red-300 transition-colors text-sm font-semibold">NEXUS</Link>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -126,6 +127,7 @@ export default function Header() {
             <Link href="/subscription" className="block text-gray-300 hover:text-white" onClick={() => setMobileOpen(false)}>Abonnement</Link>
             <Link href="/faq" className="block text-gray-300 hover:text-white" onClick={() => setMobileOpen(false)}>FAQ</Link>
             <Link href="/support" className="block text-gray-300 hover:text-white" onClick={() => setMobileOpen(false)}>Support</Link>
+            <Link href="/nexus" className="block text-red-400 hover:text-red-300 font-semibold" onClick={() => setMobileOpen(false)}>NEXUS</Link>
             {user && <Link href="/dashboard" className="block text-yellow-400 hover:text-yellow-300" onClick={() => setMobileOpen(false)}>Dashboard</Link>}
           </div>
         </div>
