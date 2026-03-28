@@ -5,21 +5,35 @@ import { config } from '../lib/config';
 
 const router = Router();
 
+// ── Tiers pricing (in cents) ──
+const TIERS: Record<string, { name: string; price: number; label: string }> = {
+  standard: { name: 'NEXUS Standard', price: 50, label: 'Standard' },
+  pro:      { name: 'NEXUS Pro',      price: 100, label: 'Pro' },
+  lifetime: { name: 'NEXUS Lifetime', price: 200, label: 'Lifetime' },
+};
+
 // POST /api/nexus/checkout
 router.post('/checkout', async (req: Request, res: Response) => {
   try {
+    const { tier } = req.body;
+    const selected = TIERS[tier || 'standard'];
+
+    if (!selected) {
+      return res.status(400).json({ success: false, error: 'Invalid tier' });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      payment_method_collection: 'if_required',
+      payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: 'NEXUS v4.2.1 — Warzone Cheat Suite',
-              description: 'External cheat suite pour COD: Warzone. Gratuit pour les clients Zeus Prenium.',
+              name: selected.name,
+              description: `NEXUS v4.2.1 — Warzone Cheat Suite (${selected.label})`,
             },
-            unit_amount: 0,
+            unit_amount: selected.price,
           },
           quantity: 1,
         },
@@ -35,6 +49,7 @@ router.post('/checkout', async (req: Request, res: Response) => {
       metadata: {
         product: 'nexus',
         version: '4.2.1',
+        tier: selected.label,
       },
       success_url: `${config.siteUrl}/nexus/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${config.siteUrl}/nexus`,
@@ -47,27 +62,26 @@ router.post('/checkout', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/nexus/download/:sessionId — verify session then return download info
+// GET /api/nexus/download/:sessionId
 router.get('/download/:sessionId', async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
-
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session || session.status !== 'complete') {
       return res.status(400).json({ success: false, error: 'Session not valid' });
     }
 
-    // Log download in Supabase
     const pseudo = session.custom_fields?.find((f: any) => f.key === 'pseudo')?.text?.value || '';
     const email = session.customer_details?.email || '';
+    const tier = session.metadata?.tier || 'Standard';
 
-    // Upsert to avoid duplicates
     await supabase.from('nexus_downloads').upsert(
       {
         stripe_session_id: session.id,
         email,
         pseudo,
+        tier,
         downloaded_at: new Date().toISOString(),
       },
       { onConflict: 'stripe_session_id' }
@@ -77,6 +91,7 @@ router.get('/download/:sessionId', async (req: Request, res: Response) => {
       success: true,
       email,
       pseudo,
+      tier,
       exe_url: 'https://github.com/gab-gde/zen-scripts-shop-2/releases/download/nexus-v4.2.1/NEXUS.exe',
       pdf_url: '/downloads/NEXUS_Documentation.pdf',
     });
@@ -86,7 +101,7 @@ router.get('/download/:sessionId', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/nexus/stats — admin: count downloads
+// GET /api/nexus/stats
 router.get('/stats', async (req: Request, res: Response) => {
   try {
     const { count } = await supabase
