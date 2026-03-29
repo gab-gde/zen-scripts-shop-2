@@ -12,6 +12,7 @@ function NexusSuccessContent() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!sessionId) {
@@ -35,6 +36,14 @@ function NexusSuccessContent() {
         setLoading(false);
       });
   }, [sessionId]);
+
+  function copyKey() {
+    if (data?.license_key) {
+      navigator.clipboard.writeText(data.license_key);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
 
   if (loading) {
     return (
@@ -60,6 +69,10 @@ function NexusSuccessContent() {
     );
   }
 
+  const tierColor = data.tier === 'Lifetime' ? 'text-red-400 border-red-500/30 bg-red-500/10' :
+                    data.tier === 'Pro' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' :
+                    'text-cyan-400 border-cyan-500/30 bg-cyan-500/10';
+
   return (
     <div className="bg-surface border border-surface-border rounded-2xl p-8 text-center">
       <div className="w-16 h-16 bg-green-500/10 border-2 border-green-500/30 rounded-full flex items-center justify-center mx-auto mb-5">
@@ -67,11 +80,36 @@ function NexusSuccessContent() {
       </div>
 
       <h1 className="text-2xl font-bold text-white mb-1">NEXUS est à vous !</h1>
-      <p className="text-gray-500 text-sm mb-8">
-        Merci{data.pseudo ? ` ${data.pseudo}` : ''} ! Vos liens de téléchargement sont prêts.
+      <p className="text-gray-500 text-sm mb-2">
+        Merci{data.pseudo ? ` ${data.pseudo}` : ''} !
       </p>
+      <div className={`inline-block px-3 py-1 rounded-full border text-xs font-bold tracking-wider mb-6 ${tierColor}`}>
+        {data.tier?.toUpperCase()}
+      </div>
 
-      <div className="space-y-3 mb-8">
+      {/* License key */}
+      {data.license_key && data.license_key !== 'CONTACT-SUPPORT' && (
+        <div className="bg-primary-light border border-surface-border rounded-xl p-5 mb-6">
+          <p className="text-gray-500 text-xs uppercase tracking-widest mb-3">Votre clé de licence</p>
+          <div
+            onClick={copyKey}
+            className="bg-primary rounded-lg p-4 border border-surface-border cursor-pointer hover:border-yellow-500/30 transition-all group"
+          >
+            <code className="text-yellow-400 text-lg font-bold tracking-wider font-mono">
+              {data.license_key}
+            </code>
+            <p className="text-gray-600 text-[10px] mt-2 group-hover:text-gray-400 transition-colors">
+              {copied ? '✓ Copié !' : 'Cliquez pour copier'}
+            </p>
+          </div>
+          <p className="text-green-400/70 text-xs mt-3">
+            📧 Cette clé a aussi été envoyée à <strong>{data.email}</strong>
+          </p>
+        </div>
+      )}
+
+      {/* Download buttons */}
+      <div className="space-y-3 mb-6">
         <a
           href={data.exe_url}
           className="flex items-center justify-center gap-3 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,62,62,0.3)]"
@@ -92,10 +130,8 @@ function NexusSuccessContent() {
         </a>
       </div>
 
-      <div className="bg-primary-light rounded-xl p-4 text-left text-sm space-y-2 mb-6">
-        <p className="text-gray-400">
-          <span className="text-yellow-400 font-semibold">Licence :</span> contactez-nous par message pour recevoir votre clé d&apos;activation.
-        </p>
+      {/* Shortcuts */}
+      <div className="bg-primary-light rounded-xl p-4 text-left text-sm mb-6 border border-surface-border">
         <p className="text-gray-400">
           <span className="text-yellow-400 font-semibold">Raccourcis :</span> INSERT pour toggle le menu, ESC pour quitter.
         </p>
