@@ -9,7 +9,7 @@ const plans = [
   {
     tier: 'pro' as const,
     name: 'Pro',
-    price: '4.99',
+    price: '3',
     description: 'Pour les joueurs réguliers',
     features: [
       'Notifications de mise à jour instantanées',
@@ -23,7 +23,7 @@ const plans = [
   {
     tier: 'elite' as const,
     name: 'Elite',
-    price: '9.99',
+    price: '5',
     description: 'Pour les joueurs compétitifs',
     features: [
       'Tout le plan Pro +',
@@ -99,13 +99,13 @@ export default function SubscriptionPublicPage() {
               <h2 className="text-3xl font-black mb-1">Zeus Prenium <span className="text-yellow-400">Lifetime</span></h2>
               <p className="text-gray-400 mb-4">Un seul paiement. Tous les scripts. Pour toujours.</p>
               <div className="flex items-baseline gap-2 justify-center md:justify-start mb-2">
-                <span className="text-6xl font-black text-yellow-400">199</span>
+                <span className="text-6xl font-black text-yellow-400">24</span>
                 <div>
                   <span className="text-2xl text-yellow-400">.99€</span>
                   <p className="text-gray-500 text-xs">paiement unique</p>
                 </div>
               </div>
-              <p className="text-xs text-gray-500">vs. 300€+ si acheté à l&apos;unité</p>
+              <p className="text-xs text-gray-500">vs. 100€+ si acheté à l&apos;unité</p>
             </div>
 
             {/* Right: features */}
@@ -136,7 +136,7 @@ export default function SubscriptionPublicPage() {
                   : user?.is_lifetime
                   ? '✅ Accès à vie actif'
                   : user
-                  ? '🏆 Obtenir l\'accès à vie — 199.99€'
+                  ? '🏆 Obtenir l\'accès à vie — 24.99€'
                   : 'Créer un compte pour acheter'}
               </button>
               {!user && (
