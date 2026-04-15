@@ -10,11 +10,10 @@ const SITE_URL = process.env.FRONTEND_URL || 'https://scriptszeus.eu';
 
 const router = Router();
 
-// ── Tiers pricing (in cents) ──
 const TIERS: Record<string, { name: string; price: number; label: string }> = {
-  standard: { name: 'NEXUS Standard', price: 12500, label: 'Standard' },
-  pro:      { name: 'NEXUS Pro',      price: 17500, label: 'Pro' },
-  lifetime: { name: 'NEXUS Lifetime', price: 22500, label: 'Lifetime' },
+  standard: { name: 'NEXUS Standard', price: 1399, label: 'Standard' },
+  pro:      { name: 'NEXUS Pro',      price: 1899, label: 'Pro' },
+  lifetime: { name: 'NEXUS Lifetime', price: 2499, label: 'Lifetime' },
 };
 
 // ── Send NEXUS license email ──
