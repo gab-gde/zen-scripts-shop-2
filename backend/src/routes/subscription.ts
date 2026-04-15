@@ -161,7 +161,7 @@ router.post('/create-lifetime', async (req: Request, res: Response) => {
               name: 'Zeus Prenium — Accès à Vie',
               description: 'Accès illimité à tous les scripts actuels et futurs, à vie.',
             },
-            unit_amount: 19999, // 199.99€
+            unit_amount: 2499, 
           },
           quantity: 1,
         },
