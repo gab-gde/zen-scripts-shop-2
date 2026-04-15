@@ -46,7 +46,7 @@ const tiers = [
     name: 'Standard',
     key: 'standard',
     color: 'cyan',
-    price: '125',
+    price: '13.99',
     features: ['Aimbot basique', 'ESP Boxes', 'No Recoil', 'HUD Overlays'],
     locked: ['Silent Aim', 'Chams', 'Radar Hack'],
   },
@@ -54,7 +54,7 @@ const tiers = [
     name: 'Pro',
     key: 'pro',
     color: 'yellow',
-    price: '175',
+    price: '18.99',
     features: ['Tout Standard +', 'Silent Aim', 'Chams complets', 'World ESP', 'Radar Hack', 'Support prioritaire'],
     locked: [],
   },
@@ -63,7 +63,7 @@ const tiers = [
     key: 'lifetime',
     color: 'red',
     badge: true,
-    price: '225',
+    price: '24.99',
     features: ['Accès complet permanent', 'Toutes les features', 'Mises à jour à vie', 'Support VIP', 'Accès anticipé', 'Configs prédéfinies'],
     locked: [],
   },
@@ -125,7 +125,7 @@ export default function NexusPage() {
           <p className="font-mono text-gray-500 tracking-widest text-sm mb-3">v4.2.1 — WARZONE CHEAT </p>
           <p className="text-gray-400 text-lg max-w-xl mx-auto mb-10">
             Cheat complet pour Call of Duty: Warzone. Aimbot, ESP, No Recoil et plus.
-            <span className="text-yellow-400 font-semibold"> Disponible dès 125€</span> pour les clients Zeus Prenium.
+            <span className="text-yellow-400 font-semibold"> Disponible dès 13,99€</span> pour les clients Zeus Prenium.
           </p>
 
           {/* Download buttons */}
@@ -146,7 +146,7 @@ export default function NexusPage() {
                 </svg>
               )}
               {checkoutLoading === 'lifetime' ? 'Redirection...' : 'Obtenir NEXUS Lifetime'}
-              <span className="text-red-200 text-sm font-normal">225 €</span>
+              <span className="text-red-200 text-sm font-normal">24,99 €</span>
             </button>
             <a
               href="/downloads/NEXUS_Documentation.pdf"
