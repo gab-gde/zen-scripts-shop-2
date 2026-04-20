@@ -69,14 +69,19 @@ export default function SubscriptionPublicPage() {
 
   return (
     <div className="min-h-screen relative">
-      {/* ── Improved background ── */}
+      {/* ── Atmospheric background ── */}
       <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a18] via-[#0d0b1a] to-[#0a0a12]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-[radial-gradient(ellipse,rgba(250,204,21,0.04),transparent_70%)]" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[radial-gradient(ellipse,rgba(251,146,60,0.03),transparent_70%)]" />
-        <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-[radial-gradient(ellipse,rgba(168,85,247,0.03),transparent_70%)]" />
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a18] via-[#0e0c1d] to-[#0a0a12]" />
+        {/* Warm glow top */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[radial-gradient(ellipse,rgba(250,204,21,0.05),transparent_60%)]" />
+        {/* Side glows */}
+        <div className="absolute bottom-1/4 left-0 w-[500px] h-[500px] bg-[radial-gradient(ellipse,rgba(251,146,60,0.04),transparent_70%)]" />
+        <div className="absolute top-1/3 right-0 w-[400px] h-[400px] bg-[radial-gradient(ellipse,rgba(168,85,247,0.03),transparent_70%)]" />
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.015]" style={{
+          backgroundImage: 'linear-gradient(rgba(250,204,21,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(250,204,21,0.2) 1px, transparent 1px)',
+          backgroundSize: '60px 60px'
+        }} />
       </div>
 
       <div className="py-16 relative z-10">
@@ -95,17 +100,15 @@ export default function SubscriptionPublicPage() {
           </div>
 
           {/* ── LIFETIME BANNER ── */}
-          <div className="relative rounded-2xl p-8 mb-10 overflow-hidden">
-            {/* Background with depth */}
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/15 via-amber-500/10 to-orange-900/10" />
-            <div className="absolute inset-0 backdrop-blur-[1px]" />
-            <div className="absolute inset-0 border-2 border-yellow-400/40 rounded-2xl" />
-            {/* Animated glow */}
-            <div className="absolute -top-20 -right-20 w-60 h-60 bg-yellow-500/10 rounded-full blur-[80px] animate-float" />
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-500/10 rounded-full blur-[60px] animate-float" style={{ animationDelay: '3s' }} />
+          <div className="relative rounded-3xl p-8 mb-12 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/15 via-amber-500/8 to-orange-900/10" />
+            <div className="absolute inset-0 border-2 border-yellow-400/30 rounded-3xl" />
+            {/* Animated glow orbs */}
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-yellow-500/8 rounded-full blur-[100px] animate-float" />
+            <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-orange-500/8 rounded-full blur-[80px] animate-float" style={{ animationDelay: '3s' }} />
 
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-              <span className="bg-gradient-to-r from-yellow-400 to-amber-500 text-black text-xs font-black px-6 py-1.5 rounded-full tracking-wider shadow-lg shadow-yellow-500/20">
+              <span className="bg-gradient-to-r from-yellow-400 to-amber-500 text-black text-xs font-black px-6 py-1.5 rounded-full tracking-wider shadow-lg shadow-yellow-500/30">
                 🏆 OFFRE EXCLUSIVE — ACCÈS À VIE
               </span>
             </div>
@@ -115,7 +118,7 @@ export default function SubscriptionPublicPage() {
                 <h2 className="text-3xl font-black mb-1">Zeus Prenium <span className="text-yellow-400">Lifetime</span></h2>
                 <p className="text-gray-400 mb-4">Un seul paiement. Tous les scripts. Pour toujours.</p>
                 <div className="flex items-baseline gap-2 justify-center md:justify-start mb-2">
-                  <span className="text-6xl font-black text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.3)]">24</span>
+                  <span className="text-6xl font-black text-yellow-400 [text-shadow:0_0_30px_rgba(250,204,21,0.25)]">24</span>
                   <div>
                     <span className="text-2xl text-yellow-400">.99€</span>
                     <p className="text-gray-500 text-xs">paiement unique</p>
@@ -144,7 +147,7 @@ export default function SubscriptionPublicPage() {
                 <button
                   onClick={handleLifetime}
                   disabled={loading === 'lifetime' || user?.is_lifetime}
-                  className="w-full py-4 rounded-xl font-black text-lg text-black bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 transition-all disabled:opacity-50 shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40 hover:scale-[1.02]"
+                  className="w-full py-4 rounded-xl font-black text-lg text-black bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 transition-all disabled:opacity-50 shadow-xl shadow-yellow-500/20 hover:shadow-yellow-500/40 hover:scale-[1.02]"
                 >
                   {loading === 'lifetime'
                     ? 'Redirection...'
@@ -173,10 +176,10 @@ export default function SubscriptionPublicPage() {
             {plans.map((plan) => (
               <div
                 key={plan.tier}
-                className={`relative rounded-2xl p-8 transition-all hover:scale-[1.01] ${
+                className={`relative rounded-2xl p-8 transition-all duration-300 hover:translate-y-[-2px] ${
                   plan.highlight
-                    ? 'bg-gradient-to-br from-yellow-500/10 via-amber-500/5 to-orange-500/5 border-2 border-yellow-500/30 shadow-lg shadow-yellow-500/5'
-                    : 'bg-surface/80 backdrop-blur-sm border border-surface-border hover:border-yellow-500/20'
+                    ? 'bg-gradient-to-br from-yellow-500/10 via-amber-500/5 to-orange-500/5 border-2 border-yellow-500/25 shadow-xl shadow-yellow-500/5'
+                    : 'bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] hover:border-yellow-500/15'
                 }`}
               >
                 {plan.highlight && (
@@ -190,7 +193,7 @@ export default function SubscriptionPublicPage() {
                   <h2 className="text-2xl font-bold mb-1">{plan.name}</h2>
                   <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-black text-yellow-400">{plan.price}</span>
+                    <span className="text-5xl font-black text-yellow-400">{plan.price}</span>
                     <span className="text-gray-400">€ / mois</span>
                   </div>
                 </div>
@@ -207,8 +210,8 @@ export default function SubscriptionPublicPage() {
                   disabled={loading === plan.tier}
                   className={`w-full py-3.5 rounded-xl font-bold transition-all disabled:opacity-50 ${
                     plan.highlight
-                      ? 'btn-zeus hover:shadow-[0_0_20px_rgba(250,204,21,0.3)]'
-                      : 'bg-surface-light border border-surface-border hover:border-yellow-500/30 text-white'
+                      ? 'btn-zeus hover:shadow-[0_0_25px_rgba(250,204,21,0.3)]'
+                      : 'bg-white/[0.04] border border-white/[0.08] hover:border-yellow-500/25 text-white hover:bg-white/[0.06]'
                   }`}
                 >
                   {loading === plan.tier
@@ -224,18 +227,18 @@ export default function SubscriptionPublicPage() {
           </div>
 
           {/* How it works */}
-          <div className="bg-surface/60 backdrop-blur-sm rounded-2xl border border-surface-border p-8 mb-16">
-            <h2 className="text-2xl font-bold text-center mb-8">
+          <div className="bg-white/[0.02] backdrop-blur-sm rounded-3xl border border-white/[0.06] p-10 mb-16">
+            <h2 className="text-2xl font-bold text-center mb-10">
               Comment ça <span className="text-yellow-400">fonctionne</span> ?
             </h2>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-10">
               {[
-                { icon: '🔔', title: '1. Un jeu est mis à jour', desc: "Dès qu'un patch sort, nous mettons à jour le script et vous êtes notifié instantanément." },
-                { icon: '🔐', title: '2. Nouveau build chiffré', desc: 'Un nouveau build unique est généré automatiquement avec votre pseudo, clé de licence et watermarks.' },
-                { icon: '📧', title: '3. Livré par email', desc: "Vous recevez le fichier .gpc directement par email. Il ne reste plus qu'à flasher !" },
+                { icon: '🔔', title: '1. Un jeu est mis à jour', desc: "Dès qu'un patch sort, nous mettons à jour le script et vous êtes notifié." },
+                { icon: '🔐', title: '2. Nouveau build chiffré', desc: 'Un build unique est généré avec votre pseudo, clé de licence et watermarks.' },
+                { icon: '📧', title: '3. Livré par email', desc: "Le fichier .gpc arrive directement dans votre boîte mail." },
               ].map((item, i) => (
                 <div key={i} className="text-center">
-                  <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl border border-yellow-500/20">{item.icon}</div>
+                  <div className="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl border border-yellow-500/15">{item.icon}</div>
                   <h3 className="font-bold mb-2">{item.title}</h3>
                   <p className="text-sm text-gray-400">{item.desc}</p>
                 </div>
