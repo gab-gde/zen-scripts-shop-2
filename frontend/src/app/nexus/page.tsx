@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import BackgroundMusic from '@/components/BackgroundMusic';
 
 const features = [
   {
@@ -104,28 +105,37 @@ export default function NexusPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      {/* ── Warzone-themed background ── */}
+      <div className="fixed inset-0 pointer-events-none -z-10">
+        <img src="/images/warzone.jpg" alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/85 to-primary" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,62,62,0.06),transparent_60%)]" />
+      </div>
+
+      {/* ── Music player (client: placez votre MP3 dans public/audio/warzone.mp3) ── */}
+      <BackgroundMusic src="/audio/warzone.mp3" label="Warzone Theme" />
+
       {/* ══ Hero ══ */}
       <section className="relative overflow-hidden pt-24 pb-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,62,62,0.08),transparent_60%)]" />
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-yellow-500/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-orange-500/5 rounded-full blur-[100px]" />
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
           {/* Status badge */}
-          <div className="inline-flex items-center gap-2 bg-surface border border-surface-border rounded-full px-5 py-2 mb-8">
+          <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md border border-green-500/30 rounded-full px-5 py-2 mb-8">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
             </span>
-            <span className="text-sm text-gray-400 tracking-wide font-mono">UNDETECTED · EXTERNAL </span>
+            <span className="text-sm text-gray-400 tracking-wide font-mono">UNDETECTED · EXTERNAL</span>
           </div>
 
-          <h1 className="text-6xl md:text-8xl font-black mb-3 tracking-tight text-red-500">NEXUS</h1>
-          <p className="font-mono text-gray-500 tracking-widest text-sm mb-3">v4.2.1 — WARZONE CHEAT </p>
+          <h1 className="text-6xl md:text-8xl font-black mb-3 tracking-tight text-red-500 drop-shadow-[0_0_40px_rgba(255,62,62,0.3)]">NEXUS</h1>
+          <p className="font-mono text-gray-500 tracking-widest text-sm mb-3">v4.2.1 — WARZONE CHEAT</p>
           <p className="text-gray-400 text-lg max-w-xl mx-auto mb-10">
             Cheat complet pour Call of Duty: Warzone. Aimbot, ESP, No Recoil et plus.
-            <span className="text-yellow-400 font-semibold"> Disponible dès 13,99€</span> pour les clients Zeus Prenium.
+            <span className="text-orange-400 font-semibold"> Disponible dès 13,99€</span> pour les clients Zeus Prenium.
           </p>
 
           {/* Download buttons */}
@@ -133,7 +143,7 @@ export default function NexusPage() {
             <button
               onClick={() => handleCheckout('lifetime')}
               disabled={!!checkoutLoading}
-              className="group inline-flex items-center gap-3 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-wait text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,62,62,0.3)] hover:scale-105"
+              className="group inline-flex items-center gap-3 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-wait text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,62,62,0.4)] hover:scale-105"
             >
               {checkoutLoading === 'lifetime' ? (
                 <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -150,7 +160,7 @@ export default function NexusPage() {
             </button>
             <a
               href="/downloads/NEXUS_Documentation.pdf"
-              className="inline-flex items-center gap-3 bg-surface border border-surface-border hover:border-yellow-500/40 text-gray-300 hover:text-white font-medium px-8 py-4 rounded-xl transition-all duration-300"
+              className="inline-flex items-center gap-3 bg-black/30 backdrop-blur-sm border border-surface-border hover:border-orange-500/40 text-gray-300 hover:text-white font-medium px-8 py-4 rounded-xl transition-all duration-300"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -163,7 +173,7 @@ export default function NexusPage() {
       </section>
 
       {/* ══ Features ══ */}
-      <section className="py-20">
+      <section className="py-20 relative z-10">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-2">
             <span className="text-gradient">Fonctionnalités</span>
@@ -177,8 +187,8 @@ export default function NexusPage() {
                 onClick={() => setTab(i)}
                 className={`px-5 py-2.5 rounded-lg font-mono text-sm font-bold tracking-wider transition-all ${
                   tab === i
-                    ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'
-                    : 'bg-surface text-gray-500 border border-surface-border hover:text-gray-300'
+                    ? 'bg-red-500/10 text-red-400 border border-red-500/30'
+                    : 'bg-black/30 backdrop-blur-sm text-gray-500 border border-surface-border hover:text-gray-300'
                 }`}
               >
                 <span className="mr-2">{f.icon}</span>{f.tab.toUpperCase()}
@@ -190,9 +200,9 @@ export default function NexusPage() {
             {features[tab].items.map((item) => (
               <div
                 key={item.name}
-                className="group bg-surface border border-surface-border hover:border-yellow-500/20 rounded-xl p-5 transition-all card-hover"
+                className="group bg-black/30 backdrop-blur-sm border border-surface-border hover:border-red-500/20 rounded-xl p-5 transition-all card-hover"
               >
-                <h3 className="text-white font-semibold mb-1 group-hover:text-yellow-400 transition-colors text-sm">
+                <h3 className="text-white font-semibold mb-1 group-hover:text-red-400 transition-colors text-sm">
                   {item.name}
                 </h3>
                 <p className="text-gray-500 text-xs">{item.desc}</p>
@@ -203,7 +213,7 @@ export default function NexusPage() {
       </section>
 
       {/* ══ Tiers ══ */}
-      <section className="py-20 border-t border-surface-border">
+      <section className="py-20 border-t border-surface-border relative z-10">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-2">
             <span className="text-gradient">Niveaux de licence</span>
@@ -223,10 +233,12 @@ export default function NexusPage() {
                               'bg-red-500/10';
 
               return (
-                <div key={t.name} className={`relative bg-surface border ${borderColor} rounded-2xl p-6 transition-all`}>
+                <div key={t.name} className={`relative bg-black/30 backdrop-blur-sm border ${borderColor} rounded-2xl p-6 transition-all hover:scale-[1.02]`}>
                   {t.badge && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider">
-                      ⚡ RECOMMANDÉ
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider shadow-lg shadow-red-500/20">
+                        ⚡ RECOMMANDÉ
+                      </span>
                     </div>
                   )}
                   <div className={`inline-block ${bgColor} rounded-lg px-3 py-1 mb-4`}>
@@ -272,7 +284,7 @@ export default function NexusPage() {
       </section>
 
       {/* ══ How it works ══ */}
-      <section className="py-20 border-t border-surface-border">
+      <section className="py-20 border-t border-surface-border relative z-10">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
             <span className="text-gradient">Comment ça marche</span>
@@ -281,7 +293,7 @@ export default function NexusPage() {
             {steps.map((s, i) => (
               <div key={s.n} className="flex gap-5 items-start group">
                 <div className="flex flex-col items-center">
-                  <div className="w-11 h-11 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center font-mono font-bold text-yellow-400 text-sm group-hover:bg-yellow-500/20 transition-colors">
+                  <div className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-mono font-bold text-red-400 text-sm group-hover:bg-red-500/20 transition-colors">
                     {s.n}
                   </div>
                   {i < steps.length - 1 && <div className="w-px h-10 bg-surface-border my-2" />}
@@ -297,11 +309,11 @@ export default function NexusPage() {
       </section>
 
       {/* ══ Disclaimer ══ */}
-      <section className="py-10 border-t border-surface-border">
+      <section className="py-10 border-t border-surface-border relative z-10">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <p className="text-gray-600 text-[10px] font-mono leading-relaxed">
-            Zeus Prenium n'est pas responsable de l'utilisation faite de ce logiciel.
-            En téléchargeant, vous acceptez de l'utiliser sous votre propre responsabilité.
+            Zeus Prenium n&apos;est pas responsable de l&apos;utilisation faite de ce logiciel.
+            En téléchargeant, vous acceptez de l&apos;utiliser sous votre propre responsabilité.
           </p>
         </div>
       </section>
