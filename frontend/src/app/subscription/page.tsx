@@ -34,7 +34,11 @@ export default function SubscriptionPublicPage() {
   return (
     <div className="min-h-screen relative">
       <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a18] via-[#0e0c1d] to-[#0a0a12]" />
+        <div className="absolute inset-0 bg-[#0a0a12]" />
+        <div className="absolute inset-0">
+          <img src="/images/fortnite.jpg" alt="" className="w-full h-full object-cover opacity-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a18]/40 via-[#0e0c1d]/70 to-[#0a0a12]/95" />
+        </div>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[radial-gradient(ellipse,rgba(250,204,21,0.05),transparent_60%)]" />
         <div className="absolute bottom-1/4 left-0 w-[500px] h-[500px] bg-[radial-gradient(ellipse,rgba(251,146,60,0.04),transparent_70%)]" />
         <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: 'linear-gradient(rgba(250,204,21,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(250,204,21,0.2) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
