@@ -70,7 +70,7 @@ Patterns mis à jour pour chaque arme.
 - **No-Dip** : Catch-and-shoot natif recalibré
 - **Speed Boost** : Activation automatique en dribble
 - **Quick Protect** : Protection automatique du ballon
-- **Menu OLED** : 24 pages de configuration
+- **Menu OLED** : Menu de configuration simplifié
 
 ## Optimisé pour NBA 2K26 Patch 2.0
 Fenêtres vertes recalibrées, dribbles meta complets, timing adapté au moteur ProPLAY.
