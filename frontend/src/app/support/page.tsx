@@ -39,9 +39,9 @@ export default function SupportPage() {
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute inset-0 bg-[#0a0a08]" />
         <div className="absolute inset-0 theme-rust" />
-        <div className="absolute top-0 left-0 right-0 h-[50vh]">
+        <div className="absolute inset-0">
           <img src="/images/rust.jpg" alt="" className="w-full h-full object-cover opacity-15" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0a0a08]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a08]/30 via-[#0a0a08]/60 to-[#0a0a08]/95" />
         </div>
       </div>
       <AutoplayMusic youtubeId="DeCnsghKxd4" label="Rust Theme" />

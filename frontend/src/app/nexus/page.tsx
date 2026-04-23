@@ -67,9 +67,9 @@ export default function NexusPage() {
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute inset-0 bg-[#070710]" />
         <div className="absolute inset-0 theme-warzone opacity-50" />
-        <div className="absolute top-0 left-0 right-0 h-[60vh]">
+        <div className="absolute inset-0">
           <img src="/images/warzone.jpg" alt="" className="w-full h-full object-cover opacity-15" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#070710]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#070710]/20 via-[#070710]/50 to-[#070710]/90" />
         </div>
         <div className="absolute inset-0 opacity-[0.012]" style={{ backgroundImage: 'linear-gradient(rgba(239,68,68,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.3) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
       </div>

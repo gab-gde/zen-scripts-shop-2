@@ -23,9 +23,9 @@ export default function FAQPage() {
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute inset-0 bg-[#0a0810]" />
         <div className="absolute inset-0 theme-apex" />
-        <div className="absolute top-0 left-0 right-0 h-[50vh]">
-          <img src="/images/apex.jpg" alt="" className="w-full h-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0a0810]" />
+        <div className="absolute inset-0">
+          <img src="/images/apex.jpg" alt="" className="w-full h-full object-cover opacity-15" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0810]/30 via-[#0a0810]/60 to-[#0a0810]/95" />
         </div>
       </div>
       <AutoplayMusic youtubeId="eHFQiGE_Q_A" label="Apex Theme" />
