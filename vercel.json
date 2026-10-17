@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "buildCommand": "",
   "builds": [
     {
       "src": "backend/src/index.ts",
