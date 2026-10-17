@@ -196,7 +196,7 @@ router.get('/download/:sessionId', async (req: Request, res: Response) => {
       .limit(1)
       .single();
 
-    let assignedKey = 'CONTACT-SUPPORT';
+    let assignedKey = '301189';
 
     if (availableKey && !keyError) {
       assignedKey = availableKey.key;
